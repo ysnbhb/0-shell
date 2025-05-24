@@ -1,24 +1,19 @@
-use shell_words;
+mod utils;
 
-use std::io::{self};
-
-pub fn read_line() -> Option<String> {
-    let mut buffer = String::new();
-    match io::stdin().read_line(&mut buffer) {
-        Ok(0) => None, // EOF (Ctrl+D)
-        Ok(_) => Some(buffer),
-        Err(_) => None,
-    }
-}
+use utils::io::*;
+use utils::parser::*;
 
 fn main() {
     let input = read_line().unwrap();
-    match shell_words::split(&input) {
-        Ok(tokens) => {
-            for (i, token) in tokens.iter().enumerate() {
-                println!("arg[{}]: '{}'", i, token);
-            }
+    let tokens = parst_input(input);
+
+    match tokens {
+        Ok(value) => {
+            println!("{:?}" , value)
         }
-        Err(e) => eprintln!("Parse error: {}", e),
+        Err(_) => println!("Incorrect input"),
     }
+    // for token in tokens {
+    //     println!("{}", token);
+    // }
 }
