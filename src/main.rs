@@ -1,5 +1,6 @@
+mod commands;
 mod utils;
-
+use commands::exit::*;
 use utils::io::*;
 use utils::parser::*;
 
@@ -9,7 +10,12 @@ fn main() {
 
     match tokens {
         Ok(value) => {
-            println!("{:?}" , value)
+            if value.len() < 1 {
+                return;
+            }
+            if value[0] == "exist" {}
+            // println!("{:?}" , value)
+            exit();
         }
         Err(_) => println!("Incorrect input"),
     }
