@@ -1,6 +1,7 @@
 mod commands;
 mod utils;
 use commands::exit::*;
+use commands::echo::*;
 use utils::io::*;
 use utils::parser::*;
 
@@ -13,9 +14,12 @@ fn main() {
             if value.len() < 1 {
                 return;
             }
-            if value[0] == "exist" {}
+            if value[0] == "exist" {
+                exit();
+            } else if value[0] == "echo" {
+                echo(&value[1..]);
+            }
             // println!("{:?}" , value)
-            exit();
         }
         Err(_) => println!("Incorrect input"),
     }
