@@ -1,3 +1,4 @@
+use std::env;
 use std::io::Error;
 use std::fs::File;
 use std::io::{self, Read};
@@ -13,3 +14,16 @@ pub fn read_file(mut file: File) ->Result<String , Error> {
         Err(e) => Err(e)
     }
 }
+
+
+pub fn home_dir() -> Option<String> {
+    env::home_dir().map(|p| p.to_string_lossy().into_owned())
+}
+
+
+pub fn corrent_dir() -> Option<String> {
+    env::current_dir()
+        .ok()
+        .and_then(|path| path.to_str().map(|s| s.to_string()))
+}
+
