@@ -5,6 +5,7 @@ cp
 mv
 mkdir
 pwd
+Ctrl + C
 -----------------------------
 cd --in-progress
 echo --done
