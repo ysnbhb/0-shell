@@ -1,0 +1,13 @@
+
+ls (supporting -l, -a, -F) => rachnit
+rm (supporting -r) => rachnit
+cp
+mv
+mkdir
+pwd
+-----------------------------
+cd --in-progress
+echo --done
+cat --done
+exit --done
+

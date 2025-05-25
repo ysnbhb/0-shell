@@ -1,7 +1,12 @@
 mod commands;
 mod utils;
-use commands::exit::*;
+
+use std::path::Path;
+
+use commands::cat::*;
+use commands::cd::cd;
 use commands::echo::*;
+use commands::exit::*;
 use utils::io::*;
 use utils::parser::*;
 
@@ -18,8 +23,12 @@ fn main() {
                 exit();
             } else if value[0] == "echo" {
                 echo(&value[1..]);
+            } else if value[0] == "cat" {
+                cat(&value[1..])
+            } else if value[0] == "cd" {
+                let path = Path::new(&value[1]);
+                cd(&path) 
             }
-            // println!("{:?}" , value)
         }
         Err(_) => println!("Incorrect input"),
     }
