@@ -1,11 +1,11 @@
 
 ls (supporting -l, -a, -F) => rachnit
 rm (supporting -r) => rachnit
-cp
-mv
+cp => fri
+mv => fri
 mkdir
-pwd
 -----------------------------
+pwd --done
 cd --in-progress
 echo --done
 cat --done
