@@ -11,6 +11,9 @@ use utils::io::*;
 use utils::parser::*;
 
 fn main() {
+    loop {
+        
+    
     let input = read_line().unwrap();
     let tokens = parst_input(input);
     let res = home_dir();
@@ -27,7 +30,7 @@ fn main() {
     match tokens {
         Ok(value) => {
             if value.len() < 1 {
-                return;
+                continue;
             }
             if value[0] == "exit" {
                 exit();
@@ -50,5 +53,5 @@ fn main() {
     }
     // for token in tokens {
     //     println!("{}", token);
-    // }
+    }
 }

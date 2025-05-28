@@ -4,10 +4,9 @@ rm (supporting -r) => rachnit
 cp
 mv
 mkdir
-pwd
-Ctrl + C
 -----------------------------
-cd --in-progress
+pwd --done
+cd --done
 echo --done
 cat --done
 exit --done
