@@ -1,10 +1,10 @@
 
 ls (supporting -l, -a, -F) => rachnit
 rm (supporting -r) => rachnit
-cp
 mv
 mkdir
 -----------------------------
+cp --done
 pwd --done
 cd --done
 echo --done
