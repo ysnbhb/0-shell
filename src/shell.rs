@@ -3,8 +3,8 @@ use std::io::Write;
 
 use crate::commands::cat::*;
 use crate::commands::cd::*;
+use crate::commands::cp::cp;
 use crate::commands::echo::*;
-use crate::commands::exit::*;
 use crate::commands::pwd::*;
 use crate::utils::fs::*;
 use crate::utils::io::*;
@@ -24,18 +24,26 @@ pub fn shell() {
             Some(dir) => dir,
             None => {
                 println!("failed to get current dir");
-                return;
+                break;
             }
         };
-        print!("{}:$", curret_dir.replace(&home_dir, "~"));
+        print!("{}:$ ", curret_dir.replace(&home_dir, "~"));
         io::stdout().flush().unwrap();
-        let input = read_line().unwrap();
+        let input = match read_line() {
+            Some(text) => text,
+            None => {
+                break;
+            }
+        };
         let tokens = parst_input(input.trim().to_string());
 
         match tokens {
             Ok(value) => {
                 if value.is_empty() {
                     continue;
+                }
+                if value[0] == "exit" {
+                    break;
                 }
                 match_command(&value, home_dir.clone());
             }
@@ -47,7 +55,6 @@ pub fn shell() {
 fn match_command(commands: &[String], home_dir: String) {
     let comed = commands[0].clone();
     match comed.as_str() {
-        "exit" => exit(),
         "echo" => echo(&commands[1..]),
         "cat" => cat(&commands[1..]),
         "cd" => {
@@ -59,6 +66,7 @@ fn match_command(commands: &[String], home_dir: String) {
             cd(path)
         }
         "pwd" => pwd(),
+        "cp" => cp(&commands[1..]),
         _ => println!("Command '{comed}' not found"),
     }
 }
