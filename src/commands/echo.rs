@@ -1,5 +1,13 @@
 pub fn echo(strs: &[String]) {
-    let s = strs.join(" ");
+
+    for i in strs {
+        let res = format_echo(i.clone());
+        print!("{res}");
+    }
+    println!();
+}
+
+fn format_echo(s: String) -> String {
     let mut res = String::new();
     let mut word = String::new();
     for i in s.chars() {
@@ -34,5 +42,5 @@ pub fn echo(strs: &[String]) {
     if !word.is_empty() {
         res.push_str(&word);
     }
-    println!("{res}");
+    res
 }
