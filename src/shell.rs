@@ -3,6 +3,7 @@ use std::io::Write;
 
 use crate::commands::cat::*;
 use crate::commands::cd::*;
+use crate::commands::clear::clear_terminal;
 use crate::commands::cp::cp;
 use crate::commands::echo::*;
 use crate::commands::pwd::*;
@@ -11,6 +12,7 @@ use crate::utils::io::*;
 use crate::utils::parser::*;
 
 pub fn shell() {
+    clear_terminal();
     let home_dir_path = match home_dir() {
         Some(path) => path,
         None => {
@@ -30,12 +32,12 @@ pub fn shell() {
         print!("{}:$ ", curret_dir.replace(&home_dir, "~"));
         io::stdout().flush().unwrap();
         let input = match read_line() {
-            Some(text) => text,
+            Some(text) => text.trim().to_string(),
             None => {
                 break;
             }
         };
-        let tokens = parst_input(input.trim().to_string());
+        let tokens = parst_input(input);
 
         match tokens {
             Ok(value) => {
@@ -47,7 +49,7 @@ pub fn shell() {
                 }
                 match_command(&value, home_dir.clone());
             }
-            Err(_) => println!("Incorrect input"),
+            Err(e) => println!("{e}"),
         }
     }
 }
@@ -66,7 +68,8 @@ fn match_command(commands: &[String], home_dir: String) {
             cd(path)
         }
         "pwd" => pwd(),
-        "cp" => cp(&commands[1..]),
+        "cp" => cp(&commands[1..], home_dir),
+        "clear" => clear_terminal(),
         _ => println!("Command '{comed}' not found"),
     }
 }

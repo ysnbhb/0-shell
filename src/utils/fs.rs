@@ -21,6 +21,11 @@ pub fn is_dir(file: String) -> bool {
     file.is_dir()
 }
 
+pub fn is_file(file: String) -> bool {
+    let file = Path::new(&file);
+    file.is_file()
+}
+
 pub fn home_dir() -> Option<String> {
     env::home_dir().map(|p| p.to_string_lossy().into_owned())
 }
@@ -33,5 +38,10 @@ pub fn corrent_dir() -> Option<String> {
 
 pub fn copy_file(file1: String, file2: String) -> Result<u64, Error> {
     copy(file1, file2)
+}
+
+pub fn is_exist(file :String) -> bool {
+    let p = Path::new(&file);
+    p.exists()
 }
 
