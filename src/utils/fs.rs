@@ -1,5 +1,5 @@
 use std::env;
-use std::fs::{File, copy};
+use std::fs::{File, copy, create_dir};
 use std::io::Error;
 use std::io::{self, Read};
 use std::path::Path;
@@ -40,8 +40,11 @@ pub fn copy_file(file1: String, file2: String) -> Result<u64, Error> {
     copy(file1, file2)
 }
 
-pub fn is_exist(file :String) -> bool {
+pub fn is_exist(file: String) -> bool {
     let p = Path::new(&file);
     p.exists()
 }
 
+pub fn mk_dir(s: String) -> Result<(), Error> {
+    create_dir(s)
+}

@@ -6,6 +6,7 @@ use crate::commands::cd::*;
 use crate::commands::clear::clear_terminal;
 use crate::commands::cp::cp;
 use crate::commands::echo::*;
+use crate::commands::mkdir::mkdir;
 use crate::commands::pwd::*;
 use crate::utils::fs::*;
 use crate::utils::io::*;
@@ -20,6 +21,7 @@ pub fn shell() {
             return;
         }
     };
+
     let home_dir = home_dir_path.to_string();
     loop {
         let curret_dir = match corrent_dir() {
@@ -34,6 +36,7 @@ pub fn shell() {
         let input = match read_line() {
             Some(text) => text.trim().to_string(),
             None => {
+                println!();
                 break;
             }
         };
@@ -60,6 +63,10 @@ fn match_command(commands: &[String], home_dir: String) {
         "echo" => echo(&commands[1..]),
         "cat" => cat(&commands[1..]),
         "cd" => {
+            if commands.len() > 2 {
+                println!("cd: too many arguments");
+                return;
+            }
             let path = if commands.len() == 2 {
                 &commands[1].replace("~", &home_dir)
             } else {
@@ -70,6 +77,7 @@ fn match_command(commands: &[String], home_dir: String) {
         "pwd" => pwd(),
         "cp" => cp(&commands[1..], home_dir),
         "clear" => clear_terminal(),
+        "mkdir" => mkdir(&commands[1..], home_dir),
         _ => println!("Command '{comed}' not found"),
     }
 }
