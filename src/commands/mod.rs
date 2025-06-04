@@ -1,4 +1,8 @@
-pub mod exit;
-pub mod echo;
-pub mod  cat;
+pub mod cat;
 pub mod cd;
+pub mod clear;
+pub mod cp;
+pub mod echo;
+pub mod mkdir;
+pub mod mv;
+pub mod pwd;
