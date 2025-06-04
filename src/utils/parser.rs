@@ -1,3 +1,5 @@
+use std::env;
+
 pub fn parst_input(s: String) -> Result<Vec<String>, String> {
     naive_shell_split(&s)
 }
@@ -48,7 +50,16 @@ pub fn naive_shell_split(input: &str) -> Result<Vec<String>, String> {
     let mut res = Vec::new();
     for i in args {
         for j in format(i) {
-            res.push(j);
+            if j.contains("$") {
+                let word = env(j);
+                if word.is_empty() {
+                    continue;
+                } else {
+                    res.push(word);
+                }
+            } else {
+                res.push(j);
+            }
         }
     }
     Ok(res)
@@ -130,7 +141,8 @@ fn format_input(s: String) -> Vec<String> {
                     return (end..=start).map(|n| n.to_string()).collect();
                 }
                 return (start..=end).map(|n| n.to_string()).collect();
-            } else if let (Ok(start), Ok(end)) = (parts[0].parse::<char>(), parts[1].parse::<char>())
+            } else if let (Ok(start), Ok(end)) =
+                (parts[0].parse::<char>(), parts[1].parse::<char>())
             {
                 if start > end {
                     return (end..=start).map(|n| n.to_string()).collect();
@@ -143,4 +155,46 @@ fn format_input(s: String) -> Vec<String> {
         let res: Vec<String> = s.clone().split(",").map(String::from).collect();
         return res;
     }
+}
+
+pub fn env(s: String) -> String {
+    if s == "$" {
+        return s;
+    }
+    let mut is_doller = false;
+    let mut word = String::new();
+    let mut res = String::new();
+    for i in s.chars() {
+        if i == '$' {
+            if is_doller {
+                if word.is_empty() {
+                    word = "$".to_string()
+                }
+                res.push_str(&env::var(word.clone()).unwrap_or("".to_string()));
+                word.clear();
+            }
+            is_doller = !is_doller
+        } else if i == '/' {
+            if is_doller {
+                res.push_str(&env::var(word.clone()).unwrap_or("".to_string()));
+                res.push('/');
+                word.clear();
+                is_doller = false
+            } else {
+                word.push(i);
+            }
+        } else {
+            word.push(i);
+        }
+    }
+    if !word.is_empty() {
+        if is_doller {
+            res.push_str(&env::var(word.clone()).unwrap_or("".to_string()));
+        } else {
+            res.push_str(&word);
+        }
+    } else if is_doller {
+        res.push('$');
+    }
+    res
 }
