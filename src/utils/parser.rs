@@ -1,10 +1,12 @@
 use std::env;
 
-pub fn parst_input(s: String) -> Result<Vec<String>, String> {
-    naive_shell_split(&s)
+use crate::shell::match_command;
+
+pub fn parst_input(s: String, home_dir: String) -> Result<Vec<String>, String> {
+    naive_shell_split(&s, home_dir)
 }
 
-pub fn naive_shell_split(input: &str) -> Result<Vec<String>, String> {
+pub fn naive_shell_split(input: &str, home_dir: String) -> Result<Vec<String>, String> {
     let mut args = Vec::new();
     let mut current = String::new();
     let mut in_quotes = false;
@@ -19,10 +21,12 @@ pub fn naive_shell_split(input: &str) -> Result<Vec<String>, String> {
                 }
                 in_quotes = !in_quotes
             }
-            ' ' if !in_quotes => {
-                if !current.is_empty() {
-                    args.push(current.clone());
-                    current.clear();
+            ' ' => {
+                if !in_quotes {
+                    if !current.is_empty() {
+                        args.push(current.clone());
+                        current.clear();
+                    }
                 }
             }
             '\\' => {
@@ -30,6 +34,22 @@ pub fn naive_shell_split(input: &str) -> Result<Vec<String>, String> {
                     current.push('\\');
                 }
                 is_back = !is_back
+            }
+            ';' => {
+                if in_quotes {
+                    current.push(c)
+                } else {
+                    if !current.is_empty() {
+                        args.push(current.clone());
+                        current.clear();
+                    }
+                    if !args.is_empty() {
+                        match_command(&args, home_dir.clone());
+                        args.clear();
+                    } else {
+                        return Err("syntax error near unexpected token `;'".to_string());
+                    }
+                }
             }
             _ => {
                 if is_back {
@@ -93,10 +113,14 @@ pub fn format(s: String) -> Vec<String> {
                         word.push(s[j]);
                     }
                     if close {
-                        let new = format_input(word);
-                        res = update_vec_concat_vec(res, new);
+                        if word.contains(";") {
+                            update_vec(&mut res, word);
+                        } else {
+                            let new = format_input(word);
+                            res = update_vec_concat_vec(res, new);
+                        }
                     } else {
-                        update_vec(&mut res, word);
+                        update_vec(&mut res, "{".to_owned() + &word);
                     }
                     ok = false;
                 }

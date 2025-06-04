@@ -40,7 +40,7 @@ pub fn shell() {
                 break;
             }
         };
-        let tokens = parst_input(input);
+        let tokens = parst_input(input, home_dir.clone());
 
         match tokens {
             Ok(value) => {
@@ -57,7 +57,7 @@ pub fn shell() {
     }
 }
 
-fn match_command(commands: &[String], home_dir: String) {
+pub fn match_command(commands: &[String], home_dir: String) {
     let comed = commands[0].clone();
     match comed.as_str() {
         "echo" => echo(&commands[1..]),
