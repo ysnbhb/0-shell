@@ -1,8 +1,8 @@
 use std::env;
-use std::fs::{File, copy, create_dir};
+use std::fs::{File, copy, create_dir, remove_dir, remove_file};
 use std::io::Error;
 use std::io::{self, Read};
-use std::path::{Path , PathBuf};
+use std::path::{Path, PathBuf};
 pub fn open_file(s: &str) -> io::Result<File> {
     File::open(s)
 }
@@ -49,7 +49,6 @@ pub fn mk_dir(s: String) -> Result<(), Error> {
     create_dir(s)
 }
 
-
 pub fn fix_files(file1: String, file2: String) -> Result<(String, String), String> {
     if is_dir(file1.clone()) {
         return Err(format!("cp: omitting directory '{}'", file1));
@@ -66,4 +65,12 @@ pub fn fix_files(file1: String, file2: String) -> Result<(String, String), Strin
     }
 
     Ok((file1, file2))
+}
+
+pub fn remove(path: String, option_r: bool) -> io::Result<()> {
+    if option_r {
+        remove_dir(path)
+    } else {
+        remove_file(path)
+    }
 }
