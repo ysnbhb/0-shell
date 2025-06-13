@@ -34,7 +34,10 @@ pub fn shell() {
         print!("{}:$ ", curret_dir.replace(&home_dir, "~"));
         io::stdout().flush().unwrap();
         let input = match read_line() {
-            Some(text) => text.trim().to_string(),
+            Some(mut text) => {
+                text.pop();
+                text
+            }
             None => {
                 println!();
                 break;
