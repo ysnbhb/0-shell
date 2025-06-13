@@ -1,5 +1,5 @@
-use crate::utils::fs::{copy_file, is_dir};
-use std::path::{Path, PathBuf};
+use crate::utils::fs::{copy_file, is_dir , fix_files};
+
 
 pub fn cp(args: &[String]) {
     if args.len() < 1 {
@@ -16,7 +16,7 @@ pub fn cp(args: &[String]) {
                 let res = copy_file(file.0, file.1);
                 match res {
                     Ok(_) => return,
-                    Err(e) => println!("{}", e),
+                    Err(e) => println!("cp: cannot open 'todo' for reading: {}", e.kind()),
                 }
             }
             Err(e) => println!("{e}"),
@@ -34,7 +34,7 @@ pub fn cp(args: &[String]) {
                     let res = copy_file(file.0, file.1);
                     match res {
                         Ok(_) => continue,
-                        Err(e) => println!("{}", e),
+                        Err(e) => println!("cp: cannot open 'todo' for reading: {}", e.kind()),
                     }
                 }
                 Err(e) => println!("{e}"),
@@ -43,20 +43,4 @@ pub fn cp(args: &[String]) {
     }
 }
 
-fn fix_files(file1: String, file2: String) -> Result<(String, String), String> {
-    if is_dir(file1.clone()) {
-        return Err(format!("cp: omitting directory '{}'", file1));
-    }
 
-    if is_dir(file2.clone()) {
-        let file_name = Path::new(&file1)
-            .file_name()
-            .ok_or_else(|| format!("cp: invalid file path '{}'", file1))?;
-        let mut dest_path = PathBuf::from(file2);
-        dest_path.push(file_name);
-
-        return Ok((file1, dest_path.to_string_lossy().to_string()));
-    }
-
-    Ok((file1, file2))
-}

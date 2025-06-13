@@ -6,8 +6,8 @@ pub fn mkdir(paths: &[String]) {
         return;
     }
     for i in paths {
-        if let Err(_) = mk_dir(i.clone()) {
-            println!("mkdir: cannot create directory ‘{i}’: File exists")
+        if let Err(e) = mk_dir(i.clone()) {
+            println!("mkdir: cannot create directory ‘{i}’: {}" , e.kind())
         }
     }
 }
