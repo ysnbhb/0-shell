@@ -41,6 +41,9 @@ pub fn naive_shell_split(input: &str, home_dir: String) -> Result<Vec<String>, S
                         current.clear();
                     }
                     if !args.is_empty() {
+                        if args[0] == "exit" {
+                            return Ok(args);
+                        }
                         match_command(&args, home_dir.clone());
                         args.clear();
                     } else {
