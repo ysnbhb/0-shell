@@ -1,9 +1,6 @@
 pub fn echo(strs: &[String]) {
-
-    for i in strs {
-        let res = format_echo(i.clone());
-        print!("{res}");
-    }
+    let res = format_echo(strs.join(" "));
+    print!("{res}");
     println!();
 }
 

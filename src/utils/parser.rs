@@ -100,27 +100,25 @@ pub fn format(s: String) -> Vec<String> {
                     update_vec(&mut res, "{".to_string());
                 } else {
                     let mut word = String::new();
-                    let mut close = false;
-                    for j in i + 1..s.len() {
+                    let mut close = 0;
+                    for j in i..s.len() {
                         i += 1;
                         if s[j] == '}' {
-                            close = true;
-                            break;
-                        }
-                        if s[j] == '{' {
-                            break;
+                            close -= 1;
+                        } else if s[j] == '{' {
+                            close += 1;
                         }
                         word.push(s[j]);
                     }
-                    if close {
+                    if close == 0 {
                         if word.len() == 1 {
-                            update_vec(&mut res, format!("{}{}{}", "{", word, "}"));
+                            update_vec(&mut res, word);
                         } else {
                             let new = format_input(word);
                             res = update_vec_concat_vec(res, new);
                         }
                     } else {
-                        update_vec(&mut res, format!("{}{}", "{", word));
+                        update_vec(&mut res, word);
                     }
                     ok = false;
                 }
@@ -158,7 +156,10 @@ fn update_vec_concat_vec(arr: Vec<String>, s: Vec<String>) -> Vec<String> {
 
 fn format_input(s: String) -> Vec<String> {
     if s.contains("..") {
-        let parts: Vec<&str> = s.split("..").collect();
+        let mut copy = s.clone();
+        copy.pop();
+        copy.remove(0);
+        let parts: Vec<&str> = copy.split("..").collect();
         if parts.len() == 2 {
             if let (Ok(start), Ok(end)) = (parts[0].parse::<i32>(), parts[1].parse::<i32>()) {
                 if start > end {
@@ -174,9 +175,13 @@ fn format_input(s: String) -> Vec<String> {
                 return (start..=end).map(|n| n.to_string()).collect();
             }
         }
-        return vec![format!("{}{}{}", "{", s, "}")];
+        return vec![s];
     } else {
-        let res: Vec<String> = s.clone().split(",").map(String::from).collect();
+        let filter: String = s
+            .chars()
+            .filter(|&c| c != '{' && c != '}')
+            .collect::<String>();
+        let res: Vec<String> = filter.clone().split(",").map(String::from).collect();
         return res;
     }
 }
