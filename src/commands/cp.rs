@@ -1,7 +1,7 @@
 use crate::utils::fs::{copy_file, is_dir};
 use std::path::{Path, PathBuf};
 
-pub fn cp(args: &[String], home_dir: String) {
+pub fn cp(args: &[String]) {
     if args.len() < 1 {
         println!("cp: missing file operand");
         return;
@@ -11,7 +11,7 @@ pub fn cp(args: &[String], home_dir: String) {
         return;
     }
     if args.len() == 2 {
-        match fix_files(args[0].clone(), args[1].clone(), home_dir) {
+        match fix_files(args[0].clone(), args[1].clone()) {
             Ok(file) => {
                 let res = copy_file(file.0, file.1);
                 match res {
@@ -29,7 +29,7 @@ pub fn cp(args: &[String], home_dir: String) {
             println!("cp: target '{}' is not a directory", to_copy);
         }
         for i in sourc {
-            match fix_files(i.clone(), to_copy.clone(), home_dir.clone()) {
+            match fix_files(i.clone(), to_copy.clone()) {
                 Ok(file) => {
                     let res = copy_file(file.0, file.1);
                     match res {
@@ -43,9 +43,7 @@ pub fn cp(args: &[String], home_dir: String) {
     }
 }
 
-fn fix_files(file1: String, file2: String, home_dir: String) -> Result<(String, String), String> {
-    let file1 = file1.replace("~", &home_dir);
-    let file2 = file2.replace("~", &home_dir);
+fn fix_files(file1: String, file2: String) -> Result<(String, String), String> {
     if is_dir(file1.clone()) {
         return Err(format!("cp: omitting directory '{}'", file1));
     }

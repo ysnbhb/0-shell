@@ -40,7 +40,7 @@ pub fn shell() {
                 break;
             }
         };
-        let tokens = parst_input(input);
+        let tokens = parst_input(input, home_dir.clone());
 
         match tokens {
             Ok(value) => {
@@ -68,16 +68,16 @@ fn match_command(commands: &[String], home_dir: String) {
                 return;
             }
             let path = if commands.len() == 2 {
-                &commands[1].replace("~", &home_dir)
+                &commands[1]
             } else {
                 &home_dir
             };
             cd(path)
         }
         "pwd" => pwd(),
-        "cp" => cp(&commands[1..], home_dir),
+        "cp" => cp(&commands[1..]),
         "clear" => clear_terminal(),
-        "mkdir" => mkdir(&commands[1..], home_dir),
+        "mkdir" => mkdir(&commands[1..]),
         _ => println!("Command '{comed}' not found"),
     }
 }

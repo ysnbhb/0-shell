@@ -1,10 +1,10 @@
-use std::env;
+use std::env::{self};
 
-pub fn parst_input(s: String) -> Result<Vec<String>, String> {
-    naive_shell_split(&s)
+pub fn parst_input(s: String, home_dir: String) -> Result<Vec<String>, String> {
+    naive_shell_split(&s, home_dir)
 }
 
-pub fn naive_shell_split(input: &str) -> Result<Vec<String>, String> {
+pub fn naive_shell_split(input: &str, home_dir: String) -> Result<Vec<String>, String> {
     let mut args = Vec::new();
     let mut current = String::new();
     let mut in_quotes = false;
@@ -21,7 +21,7 @@ pub fn naive_shell_split(input: &str) -> Result<Vec<String>, String> {
             }
             ' ' if !in_quotes => {
                 if !current.is_empty() {
-                    args.push(current.clone());
+                    args.push(current.clone().replacen("~", &home_dir, 1));
                     current.clear();
                 }
             }
@@ -45,7 +45,7 @@ pub fn naive_shell_split(input: &str) -> Result<Vec<String>, String> {
     }
 
     if !current.is_empty() {
-        args.push(current);
+        args.push(current.replacen("~", &home_dir, 1));
     }
     let mut res = Vec::new();
     for i in args {
@@ -93,10 +93,14 @@ pub fn format(s: String) -> Vec<String> {
                         word.push(s[j]);
                     }
                     if close {
-                        let new = format_input(word);
-                        res = update_vec_concat_vec(res, new);
+                        if word.len() == 1 {
+                            update_vec(&mut res, format!("{}{}{}", "{", word, "}"));
+                        } else {
+                            let new = format_input(word);
+                            res = update_vec_concat_vec(res, new);
+                        }
                     } else {
-                        update_vec(&mut res, word);
+                        update_vec(&mut res, format!("{}{}", "{", word));
                     }
                     ok = false;
                 }
@@ -150,7 +154,7 @@ fn format_input(s: String) -> Vec<String> {
                 return (start..=end).map(|n| n.to_string()).collect();
             }
         }
-        return vec![s];
+        return vec![format!("{}{}{}", "{", s, "}")];
     } else {
         let res: Vec<String> = s.clone().split(",").map(String::from).collect();
         return res;
