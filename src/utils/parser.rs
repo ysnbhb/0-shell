@@ -90,13 +90,13 @@ pub fn format(s: String) -> Vec<String> {
         return vec![s];
     }
     let mut res: Vec<String> = Vec::new();
-    let mut ok = false;
     let s: Vec<_> = s.chars().collect();
     let mut i = 0;
     while i < s.len() {
         match s[i] {
             '{' => {
-                if ok {
+                let next = s.get(i + 1).unwrap_or(&'\0');
+                if *next == '{' {
                     update_vec(&mut res, "{".to_string());
                 } else {
                     let mut word = String::new();
@@ -109,9 +109,13 @@ pub fn format(s: String) -> Vec<String> {
                             close += 1;
                         }
                         word.push(s[j]);
+                        if close == 0 {
+                            break;
+                        }
                     }
+                    i -= 1;
                     if close == 0 {
-                        if word.len() == 1 {
+                        if !word.contains(",") {
                             update_vec(&mut res, word);
                         } else {
                             let new = format_input(word);
@@ -120,7 +124,6 @@ pub fn format(s: String) -> Vec<String> {
                     } else {
                         update_vec(&mut res, word);
                     }
-                    ok = false;
                 }
             }
             _ => update_vec(&mut res, s[i].to_string()),

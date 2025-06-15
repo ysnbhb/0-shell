@@ -1,5 +1,5 @@
 use std::env;
-use std::fs::{File, copy, create_dir, remove_dir, remove_file};
+use std::fs::{File, copy, create_dir, remove_dir, remove_file, rename};
 use std::io::Error;
 use std::io::{self, Read};
 use std::path::{Path, PathBuf};
@@ -68,9 +68,16 @@ pub fn fix_files(file1: String, file2: String) -> Result<(String, String), Strin
 }
 
 pub fn remove(path: String, option_r: bool) -> io::Result<()> {
-    if option_r {
-        remove_dir(path)
+    if is_dir(path.clone()) && option_r {
+        return remove_dir(path);
+    }
+    remove_file(path)
+}
+
+pub fn move_file(file: &Path, dir: &Path) -> Result<(), std::io::Error> {
+    if let Some(file_name) = file.file_name() {
+        rename(file_name, dir)
     } else {
-        remove_file(path)
+        rename(file, dir)
     }
 }

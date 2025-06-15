@@ -1,8 +1,8 @@
 
 ls (supporting -l, -a, -F) => rachnit
-rm (supporting -r) => rachnit
-mv
 -----------------------------
+rm (supporting -r) --done
+mv --done
 mkdir --done
 cp --done
 pwd --done
