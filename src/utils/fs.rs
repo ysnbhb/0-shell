@@ -76,7 +76,8 @@ pub fn remove(path: String, option_r: bool) -> io::Result<()> {
 
 pub fn move_file(file: &Path, dir: &Path) -> Result<(), std::io::Error> {
     if let Some(file_name) = file.file_name() {
-        rename(file_name, dir)
+        let dest = dir.join(file_name);
+        rename(file, dest)
     } else {
         rename(file, dir)
     }
