@@ -1,5 +1,5 @@
 use std::env;
-use std::fs::{File, copy, create_dir, remove_dir, remove_file, rename};
+use std::fs::{File, copy, create_dir, remove_dir_all, remove_file, rename};
 use std::io::Error;
 use std::io::{self, Read};
 use std::path::{Path, PathBuf};
@@ -69,7 +69,7 @@ pub fn fix_files(file1: String, file2: String) -> Result<(String, String), Strin
 
 pub fn remove(path: String, option_r: bool) -> io::Result<()> {
     if is_dir(path.clone()) && option_r {
-        return remove_dir(path);
+        return remove_dir_all(path);
     }
     remove_file(path)
 }

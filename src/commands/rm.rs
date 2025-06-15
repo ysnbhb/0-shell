@@ -25,6 +25,10 @@ pub fn rm(paths: &[String]) {
     }
     paths.iter().for_each(|path| {
         if !path.starts_with("-") {
+            if path.chars().all(|c| c == '.') {
+                println!("rm: refusing to remove '.' or '..' directory: skipping '{path}'");
+                return;
+            }
             if let Err(e) = remove(path.to_string(), remove_dir) {
                 println!("rm: cannot remove '{path}': {}", e.kind())
             }
