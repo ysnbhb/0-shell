@@ -4,12 +4,20 @@ pub fn rm(paths: &[String]) {
     let mut remove_dir = false;
     for path in paths {
         if path.starts_with("-") {
-            if path.chars().skip(1).all(|c| c == 'r') {
-                remove_dir = true
+            if
+                path
+                    .chars()
+                    .skip(1)
+                    .all(|c| c == 'r')
+            {
+                remove_dir = true;
             } else {
                 println!(
                     "rm: invalid option -- '{}'",
-                    path.chars().filter(|c| *c != 'r').collect::<String>()
+                    path
+                        .chars()
+                        .filter(|c| *c != 'r')
+                        .collect::<String>()
                 );
                 return;
             }
@@ -25,7 +33,12 @@ pub fn rm(paths: &[String]) {
     }
     paths.iter().for_each(|path| {
         if !path.starts_with("-") {
-            if path.chars().all(|c| c == '.') {
+            if
+                path
+                    .chars()
+                    .filter(|c| *c != '/')
+                    .all(|c| c == '.')
+            {
                 println!("rm: refusing to remove '.' or '..' directory: skipping '{path}'");
                 return;
             }

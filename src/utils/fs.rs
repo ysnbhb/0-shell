@@ -1,8 +1,12 @@
-use std::env;
-use std::fs::{File, copy, create_dir, remove_dir_all, remove_file, rename};
+use std::{ env };
+use std::fs::{ copy, create_dir, remove_dir_all, remove_file, rename, File, Metadata };
 use std::io::Error;
-use std::io::{self, Read};
-use std::path::{Path, PathBuf};
+use std::io::{ self, Read };
+use std::os::unix::fs::MetadataExt;
+use std::path::{ Path, PathBuf };
+
+use chrono::{ DateTime, Local };
+
 pub fn open_file(s: &str) -> io::Result<File> {
     File::open(s)
 }
@@ -81,4 +85,30 @@ pub fn move_file(file: &Path, dir: &Path) -> Result<(), std::io::Error> {
     } else {
         rename(file, dir)
     }
+}
+
+pub fn permissions(path: &Path) -> std::io::Result<String> {
+    let metadata = std::fs::metadata(path)?;
+    let mode = metadata.mode();
+
+    let file_type = if metadata.is_dir() { 'd' } else if metadata.is_symlink() { 'l' } else { '-' };
+
+    let mut perms = String::new();
+    perms.push(file_type);
+
+    for i in (0..3).rev() {
+        let shift = i * 3;
+        let bits = (mode >> shift) & 0o7;
+        perms.push(if (bits & 0o4) != 0 { 'r' } else { '-' });
+        perms.push(if (bits & 0o2) != 0 { 'w' } else { '-' });
+        perms.push(if (bits & 0o1) != 0 { 'x' } else { '-' });
+    }
+
+    Ok(perms)
+}
+
+pub fn create_date(metadata: &Metadata) -> std::io::Result<String> {
+    let modified_time = metadata.modified()?;
+    let date_time: DateTime<Local> = modified_time.into();
+    Ok(date_time.format("%b %e %H:%M").to_string())
 }

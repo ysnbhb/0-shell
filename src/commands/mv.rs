@@ -1,6 +1,6 @@
-use std::path::Path;
+use std::{ path::Path };
 
-use crate::utils::fs::move_file;
+use crate::utils::fs::{ move_file};
 
 pub fn mv(paths: &[String]) {
     if paths.is_empty() {
