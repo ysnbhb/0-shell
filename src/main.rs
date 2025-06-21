@@ -29,11 +29,15 @@ pub fn git_info() -> Option<(String, String)> {
 // }
 
 fn main() {
-    match git_info() {
-        Some((repo_path, branch)) => {
-            println!("Git repo: {}", repo_path);
-            println!("On branch: {}", branch);
-        }
-        None => println!("Not a Git repository"),
-    }
+
+    let reselt = git2::Repository::clone("https://github.com/ysnbhb/piscine-rust.git", "piscine-rust").unwrap();
+
+    // match git_info() {
+    //     Some((repo_path, branch)) => {
+    //         println!("Git repo: {}", repo_path);
+    //         println!("On branch: {}", branch);
+    //     }
+    //     None => println!("Not a Git repository"),
+    // }
+    // shell()
 }
