@@ -5,7 +5,7 @@ use std::io::{ self, Read };
 use std::os::unix::fs::MetadataExt;
 use std::path::{ Path, PathBuf };
 
-use chrono::{ DateTime, Local };
+use chrono::{ DateTime, Duration, Local };
 
 pub fn open_file(s: &str) -> io::Result<File> {
     File::open(s)
@@ -110,5 +110,15 @@ pub fn permissions(path: &Path) -> std::io::Result<String> {
 pub fn create_date(metadata: &Metadata) -> std::io::Result<String> {
     let modified_time = metadata.modified()?;
     let date_time: DateTime<Local> = modified_time.into();
-    Ok(date_time.format("%b %e %H:%M").to_string())
+    let now = Local::now();
+
+    let six_months = Duration::days(183);
+
+    let formatted = if (now - date_time).abs() > six_months {
+        date_time.format("%b %e  %Y").to_string()
+    } else {
+        date_time.format("%b %e %H:%M").to_string()
+    };
+
+    Ok(formatted)
 }
