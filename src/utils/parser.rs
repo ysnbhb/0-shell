@@ -1,5 +1,5 @@
 use crate::match_command;
-use std::env::{self};
+use std::env::{ self };
 
 pub fn parst_input(s: String, home_dir: String) -> Result<Vec<String>, String> {
     naive_shell_split(&s, home_dir)
@@ -18,7 +18,7 @@ pub fn naive_shell_split(input: &str, home_dir: String) -> Result<Vec<String>, S
                     is_back = false;
                     continue;
                 }
-                in_quotes = !in_quotes
+                in_quotes = !in_quotes;
             }
             ' ' if !in_quotes => {
                 if !current.is_empty() {
@@ -30,11 +30,11 @@ pub fn naive_shell_split(input: &str, home_dir: String) -> Result<Vec<String>, S
                 if is_back {
                     current.push('\\');
                 }
-                is_back = !is_back
+                is_back = !is_back;
             }
             ';' => {
                 if in_quotes {
-                    current.push(c)
+                    current.push(c);
                 } else {
                     if !current.is_empty() {
                         args.push(current.clone());
@@ -55,7 +55,7 @@ pub fn naive_shell_split(input: &str, home_dir: String) -> Result<Vec<String>, S
                 if is_back {
                     current.push('\\');
                 }
-                current.push(c)
+                current.push(c);
             }
         }
     }
@@ -115,7 +115,7 @@ pub fn format(s: String) -> Vec<String> {
                     }
                     i -= 1;
                     if close == 0 {
-                        if !word.contains(",") {
+                        if !word.contains(",") && !word.contains("..") {
                             update_vec(&mut res, word);
                         } else {
                             let new = format_input(word);
@@ -128,7 +128,7 @@ pub fn format(s: String) -> Vec<String> {
             }
             _ => update_vec(&mut res, s[i].to_string()),
         }
-        i += 1
+        i += 1;
     }
     res
 }
@@ -159,9 +159,10 @@ fn update_vec_concat_vec(arr: Vec<String>, s: Vec<String>) -> Vec<String> {
 
 fn format_input(s: String) -> Vec<String> {
     if s.contains("..") {
-        let mut copy = s.clone();
-        copy.pop();
-        copy.remove(0);
+        let copy = s
+            .chars()
+            .filter(|c| (*c != '{' && *c != '}'))
+            .collect::<String>();
         let parts: Vec<&str> = copy.split("..").collect();
         if parts.len() == 2 {
             if let (Ok(start), Ok(end)) = (parts[0].parse::<i32>(), parts[1].parse::<i32>()) {
@@ -169,8 +170,8 @@ fn format_input(s: String) -> Vec<String> {
                     return (end..=start).map(|n| n.to_string()).collect();
                 }
                 return (start..=end).map(|n| n.to_string()).collect();
-            } else if let (Ok(start), Ok(end)) =
-                (parts[0].parse::<char>(), parts[1].parse::<char>())
+            } else if
+                let (Ok(start), Ok(end)) = (parts[0].parse::<char>(), parts[1].parse::<char>())
             {
                 if start > end {
                     return (end..=start).map(|n| n.to_string()).collect();
@@ -200,18 +201,18 @@ pub fn env(s: String) -> String {
         if i == '$' {
             if is_doller {
                 if word.is_empty() {
-                    word = "$".to_string()
+                    word = "$".to_string();
                 }
                 res.push_str(&env::var(word.clone()).unwrap_or("".to_string()));
                 word.clear();
             }
-            is_doller = !is_doller
+            is_doller = !is_doller;
         } else if i == '/' {
             if is_doller {
                 res.push_str(&env::var(word.clone()).unwrap_or("".to_string()));
                 res.push('/');
                 word.clear();
-                is_doller = false
+                is_doller = false;
             } else {
                 word.push(i);
             }
