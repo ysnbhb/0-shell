@@ -4,7 +4,7 @@ use std::io::Error;
 use std::io::{ self, Read };
 use std::os::unix::fs::MetadataExt;
 use std::path::{ Path, PathBuf };
-
+use users::{ get_group_by_gid, get_user_by_uid };
 use chrono::{ DateTime, Duration, Local };
 
 pub fn open_file(s: &str) -> io::Result<File> {
@@ -80,8 +80,12 @@ pub fn remove(path: String, option_r: bool) -> io::Result<()> {
 
 pub fn move_file(file: &Path, dir: &Path) -> Result<(), std::io::Error> {
     if let Some(file_name) = file.file_name() {
-        let dest = dir.join(file_name);
-        rename(file, dest)
+        if dir.exists() {
+            let dest = dir.join(file_name);
+            rename(file, dest)
+        } else {
+            rename(file, dir)
+        }
     } else {
         rename(file, dir)
     }
@@ -121,4 +125,19 @@ pub fn create_date(metadata: &Metadata) -> std::io::Result<String> {
     };
 
     Ok(formatted)
+}
+
+pub fn group_user_name(metadata: &Metadata) -> Option<(String, String)> {
+    let uid_user = metadata.uid();
+    let uid_group = metadata.gid();
+    let user_ownr = get_user_by_uid(uid_user)?;
+    let user_group = get_group_by_gid(uid_group)?;
+    Some((
+        user_group.name().to_string_lossy().to_string(),
+        user_ownr.name().to_string_lossy().to_string(),
+    ))
+}
+
+pub fn size_file(metadata: &Metadata) -> (u64, u64) {
+    (metadata.size(), metadata.nlink())
 }
