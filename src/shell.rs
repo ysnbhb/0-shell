@@ -1,6 +1,3 @@
-use std::io;
-use std::io::Write;
-
 use crate::commands::cat::*;
 use crate::commands::cd::*;
 use crate::commands::clear::clear_terminal;
@@ -33,8 +30,7 @@ pub fn shell() {
                 break;
             }
         };
-        print!("{}:$ ", curret_dir.replace(&home_dir, "~"));
-        io::stdout().flush().unwrap();
+        print_currant_dir(home_dir.clone(), curret_dir);
         let input = match read_line() {
             Some(mut text) => {
                 text.pop();

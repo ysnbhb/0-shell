@@ -1,10 +1,45 @@
-use std::{ io::stdin };
+use std::{
+    io::{self, Write, stdin},
+    path::Path,
+};
+
+use git2::Repository;
+
+use crate::utils::color::{BLUE, BOLD, GREEN, RED, RESET, SKY_DARKER, YELLOW};
 
 pub fn read_line() -> Option<String> {
     let mut buffer = String::new();
     match stdin().read_line(&mut buffer) {
-        Ok(0) => { None }
+        Ok(0) => None,
         Ok(_) => Some(buffer),
         Err(_) => None,
     }
+}
+
+pub fn git_info() -> Option<String> {
+    let repo = Repository::discover(".").ok()?;
+
+    let head = repo.head().ok()?;
+    let shorthand = head.shorthand()?.to_string();
+
+    Some(shorthand)
+}
+
+pub fn print_currant_dir(home_dir: String, currnt_dir: String) {
+    print!("{}{}➜  {}", BOLD, GREEN, SKY_DARKER);
+    if home_dir == currnt_dir {
+        print!("~")
+    } else {
+        if let Some(file_name) = Path::new(&currnt_dir).file_name() {
+            print!("{}", file_name.to_string_lossy().to_string());
+        } else {
+            print!("{}", currnt_dir);
+        }
+    }
+    if let Some(branch) = git_info() {
+        print!(" {}git:({RED}{branch}{BLUE})", BLUE)
+    }
+    print!("{} {}$ ", RESET, YELLOW);
+    print!("{}", RESET);
+    io::stdout().flush().unwrap();
 }
