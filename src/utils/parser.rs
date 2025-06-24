@@ -1,5 +1,5 @@
 use crate::match_command;
-use std::env::{ self };
+use std::env::{self};
 
 pub fn parst_input(s: String, home_dir: String) -> Result<Vec<String>, String> {
     naive_shell_split(&s, home_dir)
@@ -21,6 +21,12 @@ pub fn naive_shell_split(input: &str, home_dir: String) -> Result<Vec<String>, S
                 in_quotes = !in_quotes;
             }
             ' ' if !in_quotes => {
+                if !current.is_empty() {
+                    args.push(current.clone().replacen("~", &home_dir, 1));
+                    current.clear();
+                }
+            }
+            '\t' if !in_quotes => {
                 if !current.is_empty() {
                     args.push(current.clone().replacen("~", &home_dir, 1));
                     current.clear();
@@ -170,8 +176,8 @@ fn format_input(s: String) -> Vec<String> {
                     return (end..=start).map(|n| n.to_string()).collect();
                 }
                 return (start..=end).map(|n| n.to_string()).collect();
-            } else if
-                let (Ok(start), Ok(end)) = (parts[0].parse::<char>(), parts[1].parse::<char>())
+            } else if let (Ok(start), Ok(end)) =
+                (parts[0].parse::<char>(), parts[1].parse::<char>())
             {
                 if start > end {
                     return (end..=start).map(|n| n.to_string()).collect();
