@@ -1,5 +1,4 @@
-use crate::utils::fs::{copy_file, is_dir , fix_files};
-
+use crate::utils::fs::{copy_file, fix_files, is_dir};
 
 pub fn cp(args: &[String]) {
     if args.len() < 1 {
@@ -43,4 +42,4 @@ pub fn cp(args: &[String]) {
     }
 }
 
-
+fn cp_mutpul() {}

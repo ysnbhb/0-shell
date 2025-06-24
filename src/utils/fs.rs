@@ -1,11 +1,11 @@
-use std::{ env };
-use std::fs::{ copy, create_dir, remove_dir_all, remove_file, rename, File, Metadata };
+use chrono::{DateTime, Duration, Local};
+use std::env;
+use std::fs::{File, Metadata, copy, create_dir, remove_dir_all, remove_file, rename};
 use std::io::Error;
-use std::io::{ self, Read };
+use std::io::{self, Read};
 use std::os::unix::fs::MetadataExt;
-use std::path::{ Path, PathBuf };
-use users::{ get_group_by_gid, get_user_by_uid };
-use chrono::{ DateTime, Duration, Local };
+use std::path::{Path, PathBuf};
+use users::{get_group_by_gid, get_user_by_uid};
 
 pub fn open_file(s: &str) -> io::Result<File> {
     File::open(s)
@@ -78,16 +78,21 @@ pub fn remove(path: String, option_r: bool) -> io::Result<()> {
     remove_file(path)
 }
 
-pub fn move_file(file: &Path, dir: &Path) -> Result<(), std::io::Error> {
-    if let Some(file_name) = file.file_name() {
-        if dir.exists() {
-            let dest = dir.join(file_name);
-            rename(file, dest)
+pub fn move_file(from: &Path, to: PathBuf) -> Result<(), std::io::Error> {
+    rename(from, to)
+}
+
+pub fn format_path(path1: &str, path2: &str) -> PathBuf {
+    let file = Path::new(path1);
+    let dir = Path::new(path2);
+    if is_dir(path2.to_string()) {
+        if let Some(file_name) = file.file_name() {
+            dir.join(file_name)
         } else {
-            rename(file, dir)
+            dir.to_path_buf()
         }
     } else {
-        rename(file, dir)
+        dir.to_path_buf()
     }
 }
 
@@ -95,7 +100,13 @@ pub fn permissions(path: &Path) -> std::io::Result<String> {
     let metadata = std::fs::metadata(path)?;
     let mode = metadata.mode();
 
-    let file_type = if metadata.is_dir() { 'd' } else if metadata.is_symlink() { 'l' } else { '-' };
+    let file_type = if metadata.is_dir() {
+        'd'
+    } else if metadata.is_symlink() {
+        'l'
+    } else {
+        '-'
+    };
 
     let mut perms = String::new();
     perms.push(file_type);

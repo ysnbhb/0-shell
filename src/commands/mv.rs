@@ -1,6 +1,6 @@
-use std::{ path::Path };
+use std::path::Path;
 
-use crate::utils::fs::{ is_exist, move_file };
+use crate::utils::fs::{format_path, is_exist, move_file};
 
 pub fn mv(paths: &[String]) {
     if paths.is_empty() {
@@ -13,15 +13,21 @@ pub fn mv(paths: &[String]) {
     }
     let taget = paths.last().unwrap();
     let sourc = &paths[0..paths.len() - 1];
-    for f in sourc {
-        if f == taget {
+    move_files(sourc, taget);
+}
+
+fn move_files(files: &[String], dir: &String) {
+    for f in files {
+        if f == dir {
             println!("mv: '{f}' and '{f}' are the same file");
+            continue;
         }
-        if let Err(e) = move_file(Path::new(f), Path::new(taget)) {
-            if is_exist(taget.clone()) {
-                println!("mv: cannot stat '{f}': {}", e.kind());
+        let path2 = format_path(f, dir);
+        if let Err(e) = move_file(Path::new(f), path2) {
+            if is_exist(dir.clone()) {
+                println!("mv: cannot stat '{f}' to {dir}: {}", e.kind());
             } else {
-                println!("mv: target '{taget}' is not a directory");
+                println!("mv: target '{dir}' is not a directory");
                 return;
             }
         }
