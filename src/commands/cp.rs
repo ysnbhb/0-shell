@@ -42,4 +42,3 @@ pub fn cp(args: &[String]) {
     }
 }
 
-fn cp_mutpul() {}
