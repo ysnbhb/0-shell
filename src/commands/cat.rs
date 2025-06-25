@@ -10,7 +10,7 @@ pub fn cat(s: &[String]) {
                 let cont = read_file(f);
                 match cont {
                     Ok(c) => print!("{c}"),
-                    Err(_) => println!("cat: {i}: Is a directory"),
+                    Err(e) => println!("cat: {i}: {}", e.kind()),
                 }
             }
             Err(_) => {
