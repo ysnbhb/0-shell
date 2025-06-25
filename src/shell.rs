@@ -3,6 +3,7 @@ use crate::commands::cd::*;
 use crate::commands::clear::clear_terminal;
 use crate::commands::cp::cp;
 use crate::commands::echo::*;
+use crate::commands::ls::ls;
 use crate::commands::mkdir::mkdir;
 use crate::commands::mv::mv;
 use crate::commands::pwd::*;
@@ -81,6 +82,7 @@ pub fn match_command(commands: &[String], home_dir: String) {
         "mkdir" => mkdir(&commands[1..]),
         "rm" => rm(&commands[1..]),
         "mv" => mv(&commands[1..]),
+        "ls" => ls(&commands[1..]),
         _ => println!("Command '{comed}' not found"),
     }
 }

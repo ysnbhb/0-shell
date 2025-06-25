@@ -152,3 +152,16 @@ pub fn group_user_name(metadata: &Metadata) -> Option<(String, String)> {
 pub fn size_file(metadata: &Metadata) -> (u64, u64) {
     (metadata.size(), metadata.nlink())
 }
+
+pub fn print_inside(path: &Path) {
+    if !path.is_dir() {
+        print!("{}", path.as_os_str().to_string_lossy().to_string());
+    } else {
+        let readed_dir = path.read_dir().map(|f| f).unwrap();
+        readed_dir.for_each(|f| {
+            let file_name = f.unwrap();
+            print!("{}  ", file_name.file_name().to_string_lossy().to_string())
+        });
+    }
+    println!()
+}
