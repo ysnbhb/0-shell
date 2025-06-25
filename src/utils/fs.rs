@@ -165,3 +165,22 @@ pub fn print_inside(path: &Path) {
     }
     println!()
 }
+
+pub fn handle_flag(strs: &[String]) -> Option<(bool, bool, bool)> {
+    let mut flage_a = false;
+    let mut flage_f = false;
+    let mut flage_l = false;
+    for path in strs {
+        if path.starts_with("-") {
+            for j in path.chars().skip(1) {
+                match j {
+                    'a' => flage_a = true,
+                    'F' => flage_f = true,
+                    'l' => flage_l = true,
+                    _ => return None,
+                }
+            }
+        }
+    }
+    Some((flage_a, flage_f, flage_l))
+}
