@@ -17,6 +17,11 @@ pub fn naive_shell_split(input: &str, home_dir: String) -> Result<Vec<String>, S
                     current.push('"');
                     is_back = false;
                     continue;
+                } else if in_quotes {
+                    if !current.is_empty() {
+                        args.push(current.clone());
+                        current.clear();
+                    }
                 }
                 in_quotes = !in_quotes;
             }

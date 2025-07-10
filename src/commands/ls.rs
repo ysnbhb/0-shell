@@ -1,9 +1,10 @@
-use std::path::Path;
-
-use crate::utils::fs::print_inside;
+use crate::utils::fs::handle_flag;
 
 pub fn ls(paths: &[String]) {
-    for i in paths {
-        print_inside(Path::new(i));
+    let res: Result<(bool, bool, bool, Vec<String>), String> = handle_flag(paths);
+    match res {
+        Ok(_) => println!(),
+        Err(e) => println!("{e}"),
     }
 }
+

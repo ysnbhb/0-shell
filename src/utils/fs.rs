@@ -1,11 +1,14 @@
 use chrono::{DateTime, Duration, Local};
-use std::env;
 use std::fs::{File, Metadata, copy, create_dir, remove_dir_all, remove_file, rename};
 use std::io::Error;
 use std::io::{self, Read};
-use std::os::unix::fs::MetadataExt;
+use std::os::unix::fs::PermissionsExt;
+use std::os::unix::fs::{FileTypeExt, MetadataExt};
 use std::path::{Path, PathBuf};
+use std::{env, fs};
 use users::{get_group_by_gid, get_user_by_uid};
+
+use crate::utils::color::{BLUE, BOLD, GREEN, RESET};
 
 pub fn open_file(s: &str) -> io::Result<File> {
     File::open(s)
@@ -97,23 +100,33 @@ pub fn format_path(path1: &str, path2: &str) -> PathBuf {
 }
 
 pub fn permissions(path: &Path) -> std::io::Result<String> {
-    let metadata = std::fs::metadata(path)?;
+    let metadata = fs::metadata(path)?;
     let mode = metadata.mode();
+    println!("{mode:03b}",);
 
-    let file_type = if metadata.is_dir() {
+    let file_type = metadata.file_type();
+    let file_type = if file_type.is_dir() {
         'd'
-    } else if metadata.is_symlink() {
+    } else if file_type.is_symlink() {
         'l'
+    } else if file_type.is_fifo() {
+        'p'
+    } else if file_type.is_block_device() {
+        'b'
+    } else if file_type.is_char_device() {
+        'c'
+    } else if file_type.is_socket() {
+        's'
     } else {
         '-'
     };
-
     let mut perms = String::new();
     perms.push(file_type);
 
     for i in (0..3).rev() {
         let shift = i * 3;
-        let bits = (mode >> shift) & 0o7;
+        let bits = (mode >> shift) & 0b111;
+        println!("{bits}");
         perms.push(if (bits & 0o4) != 0 { 'r' } else { '-' });
         perms.push(if (bits & 0o2) != 0 { 'w' } else { '-' });
         perms.push(if (bits & 0o1) != 0 { 'x' } else { '-' });
@@ -148,28 +161,51 @@ pub fn group_user_name(metadata: &Metadata) -> Option<(String, String)> {
         user_ownr.name().to_string_lossy().to_string(),
     ))
 }
-
-pub fn size_file(metadata: &Metadata) -> (u64, u64) {
+// this function return size of file and link of it
+pub fn size_file_nlink(metadata: &Metadata) -> (u64, u64) {
     (metadata.size(), metadata.nlink())
 }
-
-pub fn print_inside(path: &Path) {
-    if !path.is_dir() {
-        print!("{}", path.as_os_str().to_string_lossy().to_string());
+// this print file or dir inside of its type and if flage F is
+pub fn print_inside(path: &Path, flag_f: bool) {
+    if path.is_dir() {
+        print!(
+            "{BOLD}{BLUE}{}{RESET}{}  ",
+            path.as_os_str().to_string_lossy().to_string(),
+            if flag_f { "/" } else { "" }
+        );
     } else {
-        let readed_dir = path.read_dir().map(|f| f).unwrap();
-        readed_dir.for_each(|f| {
-            let file_name = f.unwrap();
-            print!("{}  ", file_name.file_name().to_string_lossy().to_string())
-        });
+        let is_exec = is_executable(path).unwrap_or(false);
+        print!(
+            "{}{}{RESET}{}  ",
+            if flag_f && is_exec {
+                GREEN.to_owned() + &BOLD.to_owned()
+            } else {
+                "".to_owned()
+            },
+            path.as_os_str().to_string_lossy().to_string(),
+            if flag_f && is_exec { "*" } else { "" }
+        )
     }
-    println!()
 }
 
-pub fn handle_flag(strs: &[String]) -> Option<(bool, bool, bool)> {
+fn is_executable(path: &Path) -> std::io::Result<bool> {
+    let metadata = path.metadata()?;
+    let mode = metadata.permissions().mode();
+
+    // Check owner, group, or others execute bit
+    const OWNER_X: u32 = 0o100;
+    const GROUP_X: u32 = 0o010;
+    const OTHER_X: u32 = 0o001;
+
+    Ok((mode & (OWNER_X | GROUP_X | OTHER_X)) != 0)
+}
+
+pub fn handle_flag(strs: &[String]) -> Result<(bool, bool, bool, Vec<String>), String> {
     let mut flage_a = false;
     let mut flage_f = false;
     let mut flage_l = false;
+    let mut res = Vec::new();
+    let mut error = false;
     for path in strs {
         if path.starts_with("-") {
             for j in path.chars().skip(1) {
@@ -177,10 +213,32 @@ pub fn handle_flag(strs: &[String]) -> Option<(bool, bool, bool)> {
                     'a' => flage_a = true,
                     'F' => flage_f = true,
                     'l' => flage_l = true,
-                    _ => return None,
+                    _ => return Err(format!("ls: invalid option -- '{j}'")),
                 }
+            }
+        } else {
+            if is_exist(path.clone()) {
+                res.push(path.to_string());
+            } else {
+                println!("ls: cannot access '{path}': No such file or directory");
+                error = true
             }
         }
     }
-    Some((flage_a, flage_f, flage_l))
+    if res.len() == 0 && !error {
+        res = vec![String::from(".")]
+    }
+    Ok((flage_a, flage_f, flage_l, res))
+}
+
+pub fn get_total_blocks(dir: &Path) -> std::io::Result<u64> {
+    let mut total_blocks = 0;
+
+    for entry in dir.read_dir()? {
+        let entry = entry?;
+        let metadata = entry.metadata()?;
+        total_blocks += metadata.blocks();
+    }
+
+    Ok(total_blocks)
 }
