@@ -3,7 +3,7 @@ use crate::commands::cd::*;
 use crate::commands::clear::clear_terminal;
 use crate::commands::cp::cp;
 use crate::commands::echo::*;
-use crate::commands::ls::ls;
+use crate::commands::ls::commend::ls;
 use crate::commands::mkdir::mkdir;
 use crate::commands::mv::mv;
 use crate::commands::pwd::*;

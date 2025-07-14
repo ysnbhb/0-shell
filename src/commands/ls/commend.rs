@@ -7,4 +7,3 @@ pub fn ls(paths: &[String]) {
         Err(e) => println!("{e}"),
     }
 }
-
