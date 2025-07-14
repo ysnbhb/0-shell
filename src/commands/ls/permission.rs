@@ -1,4 +1,7 @@
-use std::{fs, os::unix::fs::{FileTypeExt, MetadataExt, PermissionsExt}, path::Path};
+use std::{fs::{self, Metadata}, os::unix::fs::{FileTypeExt, MetadataExt, PermissionsExt}, path::Path};
+
+use chrono::{DateTime, Duration, Local};
+use users::{get_group_by_gid, get_user_by_uid};
 
 pub fn get_total_blocks(dir: &Path, flag_a: bool) -> std::io::Result<u64> {
     let mut total_blocks = if flag_a {
@@ -111,4 +114,63 @@ pub fn permissions(path: &Path) -> std::io::Result<String> {
     }
 
     Ok(perms)
+}
+
+pub fn group_user_name(metadata: &Metadata) -> Option<(String, String)> {
+    let uid_user = metadata.uid();
+    let uid_group = metadata.gid();
+    let user_ownr = get_user_by_uid(uid_user)?;
+    let user_group = get_group_by_gid(uid_group)?;
+    Some((
+        user_group.name().to_string_lossy().to_string(),
+        user_ownr.name().to_string_lossy().to_string(),
+    ))
+}
+// this function return size of file and link of it
+pub fn size_file_nlink(metadata: &Metadata) -> (u64, u64) {
+    (metadata.size(), metadata.nlink())
+}
+
+
+pub fn create_date(metadata: &Metadata) -> std::io::Result<String> {
+    let modified_time = metadata.modified()?;
+    let date_time: DateTime<Local> = modified_time.into();
+    let now = Local::now();
+
+    let six_months = Duration::days(183);
+
+    let formatted = if (now - date_time).abs() > six_months {
+        date_time.format("%b %e  %Y").to_string()
+    } else {
+        date_time.format("%b %e %H:%M").to_string()
+    };
+
+    Ok(formatted)
+}
+
+pub fn get_major_device_number(path: &Path) -> std::io::Result<Option<u32>> {
+    let metadata = fs::symlink_metadata(path)?;
+    let file_type = metadata.file_type();
+    
+    // Check if it's a character device or block device
+    if file_type.is_char_device() || file_type.is_block_device() {
+        let rdev = metadata.rdev();
+        // Extract major number from rdev
+        // Major number is typically in the upper bits
+        let major = ((rdev >> 8) & 0xff) as u32;
+        Ok(Some(major))
+    } else {
+        Ok(None)
+    }
+}
+
+pub fn get_symlink_target(path: &Path) -> std::io::Result<Option<String>> {
+    let metadata = fs::symlink_metadata(path)?;
+    
+    if metadata.file_type().is_symlink() {
+        let target = fs::read_link(path)?;
+        Ok(Some(target.to_string_lossy().to_string()))
+    } else {
+        Ok(None)
+    }
 }
