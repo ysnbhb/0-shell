@@ -2,23 +2,18 @@ use crate::utils::fs::remove;
 
 pub fn rm(paths: &[String]) {
     let mut flag_r = false;
+    let mut res: Vec<&String> = Vec::new();
     for path in paths {
         if path.starts_with("-") {
-            if path.chars().skip(1).all(|c| c == 'r') {
+            if handul_flag(path.clone()) {
                 flag_r = true;
             } else {
-                println!(
-                    "rm: invalid option -- '{}'",
-                    path.chars().filter(|c| *c != 'r').collect::<String>()
-                );
                 return;
             }
+        } else {
+            res.push(path);
         }
     }
-    let paths: Vec<&String> = paths
-        .iter()
-        .filter(|&word| !word.chars().skip(1).collect::<String>().starts_with("-"))
-        .collect();
     if paths.is_empty() {
         println!("rm: missing operand");
         return;
@@ -30,4 +25,14 @@ pub fn rm(paths: &[String]) {
             println!("rm: cannot remove '{path}': {}", e.kind())
         }
     });
+}
+
+fn handul_flag(s: String) -> bool {
+    for i in s.chars().skip(1) {
+        if i != 'r' {
+            println!("rm: invalid option -- '{i}'");
+            return false;
+        }
+    }
+    true
 }
