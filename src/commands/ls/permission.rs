@@ -1,4 +1,8 @@
-use std::{fs::{self, Metadata}, os::unix::fs::{FileTypeExt, MetadataExt, PermissionsExt}, path::Path};
+use std::{
+    fs::{self, Metadata},
+    os::unix::fs::{FileTypeExt, MetadataExt, PermissionsExt},
+    path::Path,
+};
 
 use chrono::{DateTime, Duration, Local};
 use users::{get_group_by_gid, get_user_by_uid};
@@ -102,8 +106,6 @@ pub fn permissions(path: &Path) -> std::io::Result<String> {
     use std::os::unix::ffi::OsStrExt;
 
     if let Ok(path_cstring) = CString::new(path.as_os_str().as_bytes()) {
-        // Simple check for extended attributes
-        println!("{path_cstring:?}");
         unsafe {
             let result = libc::listxattr(path_cstring.as_ptr(), std::ptr::null_mut(), 0);
             if result > 0 {
@@ -130,7 +132,6 @@ pub fn size_file_nlink(metadata: &Metadata) -> (u64, u64) {
     (metadata.size(), metadata.nlink())
 }
 
-
 pub fn create_date(metadata: &Metadata) -> std::io::Result<String> {
     let modified_time = metadata.modified()?;
     let date_time: DateTime<Local> = modified_time.into();
@@ -150,7 +151,7 @@ pub fn create_date(metadata: &Metadata) -> std::io::Result<String> {
 pub fn get_major_device_number(path: &Path) -> std::io::Result<Option<u32>> {
     let metadata = fs::symlink_metadata(path)?;
     let file_type = metadata.file_type();
-    
+
     // Check if it's a character device or block device
     if file_type.is_char_device() || file_type.is_block_device() {
         let rdev = metadata.rdev();
@@ -165,7 +166,7 @@ pub fn get_major_device_number(path: &Path) -> std::io::Result<Option<u32>> {
 
 pub fn get_symlink_target(path: &Path) -> std::io::Result<Option<String>> {
     let metadata = fs::symlink_metadata(path)?;
-    
+
     if metadata.file_type().is_symlink() {
         let target = fs::read_link(path)?;
         Ok(Some(target.to_string_lossy().to_string()))

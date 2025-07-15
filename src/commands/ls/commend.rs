@@ -1,7 +1,11 @@
-use std::{fs, path::Path};
+use std::{fs, io, path::Path};
 
 use crate::{
-    commands::ls::{handle_flag::handle_flag, print_ls::print_inside},
+    commands::ls::{
+        handle_flag::handle_flag,
+        permission::{create_date, group_user_name, permissions, size_file_nlink},
+        print_ls::print_inside,
+    },
     utils::fs::is_dir,
 };
 
@@ -16,7 +20,14 @@ pub fn ls(paths: &[String]) {
             for i in all.3.clone() {
                 let mut paths = Vec::new();
                 if !is_dir(&i) {
-                    print_inside(Path::new(&i), all.1);
+                    let path = Path::new(&i);
+                    if all.2 {
+                        let _ = print_file_info(path);
+                    }
+                    print_inside(path, all.1);
+                    if all.2 {
+                        println!();
+                    }
                     continue;
                 }
                 if let Ok(entries) = fs::read_dir(&i) {
@@ -45,4 +56,14 @@ pub fn ls(paths: &[String]) {
         }
         Err(e) => println!("{e}"),
     }
+}
+
+fn print_file_info(p: &Path) -> io::Result<fs::Metadata> {
+    let metadata = p.metadata()?;
+    let permission_file = permissions(p).unwrap_or("".to_string());
+    let (user, group) = group_user_name(&metadata).unwrap_or(("".to_string(), "".to_string()));
+    let (size, nlink) = size_file_nlink(&metadata);
+    let creat_date = create_date(&metadata).unwrap_or("".to_string());
+    print!("{permission_file} {nlink} {group} {user} {size} {creat_date} ");
+    Ok(metadata)
 }

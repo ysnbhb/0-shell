@@ -1,4 +1,3 @@
-
 ls (supporting -l, -a, -F) => rachnit
 -----------------------------
 rm (supporting -r) --done
