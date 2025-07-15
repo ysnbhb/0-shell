@@ -3,7 +3,7 @@ use std::{fs, path::Path};
 use crate::{
     commands::ls::{
         handle_flag::handle_flag,
-        print_ls::{print_file_info, print_inside},
+        print_ls::{print_dir_file, print_file_info, print_one_file},
     },
     utils::fs::is_dir,
 };
@@ -23,7 +23,7 @@ pub fn ls(paths: &[String]) {
                     if all.2 {
                         let _ = print_file_info(path);
                     }
-                    print_inside(path, all.1);
+                    print_one_file(path, all.1);
                     if all.2 {
                         println!();
                     }
@@ -45,7 +45,7 @@ pub fn ls(paths: &[String]) {
                     }
                     paths.sort();
                     for path in paths {
-                        print_inside(Path::new(&path), all.1);
+                        print_dir_file(Path::new(&path), all.1);
                     }
                     println!();
                 } else {

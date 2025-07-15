@@ -5,97 +5,172 @@ pub fn parst_input(s: String, home_dir: String) -> Result<Vec<String>, String> {
     naive_shell_split(&s, home_dir)
 }
 
+#[derive(Debug, Clone, PartialEq)]
+enum QuoteState {
+    None,
+    Double,
+    Single,
+}
+
 pub fn naive_shell_split(input: &str, home_dir: String) -> Result<Vec<String>, String> {
     let mut args = Vec::new();
     let mut current = String::new();
-    let mut in_quotes = false;
-    let mut is_back = false;
-    for c in input.chars() {
+    let mut quote_state = QuoteState::None;
+    let mut is_escaped = false;
+    let mut chars = input.chars().peekable();
+
+    while let Some(c) = chars.next() {
         match c {
             '"' => {
-                if is_back {
+                if is_escaped {
                     current.push('"');
-                    is_back = false;
-                    continue;
-                } else if in_quotes {
-                    if !current.is_empty() {
-                        args.push(current.clone());
-                        current.clear();
+                    is_escaped = false;
+                } else {
+                    match quote_state {
+                        QuoteState::None => {
+                            quote_state = QuoteState::Double;
+                        }
+                        QuoteState::Double => {
+                            quote_state = QuoteState::None;
+                        }
+                        QuoteState::Single => {
+                            current.push('"');
+                        }
                     }
                 }
-                in_quotes = !in_quotes;
             }
-            ' ' if !in_quotes => {
-                if !current.is_empty() {
-                    args.push(current.clone().replacen("~", &home_dir, 1));
-                    current.clear();
+            '\'' => {
+                if is_escaped && quote_state != QuoteState::Single {
+                    current.push('\'');
+                    is_escaped = false;
+                } else {
+                    match quote_state {
+                        QuoteState::None => {
+                            quote_state = QuoteState::Single;
+                        }
+                        QuoteState::Single => {
+                            quote_state = QuoteState::None;
+                        }
+                        QuoteState::Double => {
+                            current.push('\'');
+                        }
+                    }
                 }
             }
-            '\t' if !in_quotes => {
-                if !current.is_empty() {
-                    args.push(current.clone().replacen("~", &home_dir, 1));
-                    current.clear();
-                }
-            }
-            '\\' => {
-                if is_back {
-                    current.push('\\');
-                }
-                is_back = !is_back;
-            }
-            ';' => {
-                if in_quotes {
+            ' ' | '\t' => {
+                if quote_state != QuoteState::None {
                     current.push(c);
                 } else {
-                    if !current.is_empty() {
-                        args.push(current.clone());
+                    
+                        args.push(expand_tilde(&current, &home_dir));
                         current.clear();
-                    }
-                    if !args.is_empty() {
-                        if args[0] == "exit" {
-                            return Ok(args);
+                
+                    // Skip multiple whitespace
+                    while let Some(&next_c) = chars.peek() {
+                        if next_c == ' ' || next_c == '\t' {
+                            chars.next();
+                        } else {
+                            break;
                         }
-                        match_command(&args, home_dir.clone());
-                        args.clear();
+                    }
+                }
+                is_escaped = false;
+            }
+            '\\' => {
+                if quote_state == QuoteState::Single {
+                    // In single quotes, backslash is literal
+                    current.push('\\');
+                } else if is_escaped {
+                    current.push('\\');
+                    is_escaped = false;
+                } else {
+                    is_escaped = true;
+                }
+            }
+            ';' => {
+                if quote_state != QuoteState::None {
+                    current.push(c);
+                } else {
+                    if is_escaped {
+                        current.push(';');
+                        is_escaped = false;
                     } else {
-                        return Err("syntax error near unexpected token `;'".to_string());
+                        args.push(expand_tilde(&current, &home_dir));
+                        current.clear();
+
+                        if !args.is_empty() {
+                            if args[0] == "exit" {
+                                return Ok(args);
+                            }
+                            // Here you would call your match_command function
+                            // match_command(&args, home_dir.clone());
+                            match_command(&args, &home_dir);
+                        } else {
+                            return Err("syntax error near unexpected token `;'".to_string());
+                        }
                     }
                 }
             }
             _ => {
-                if is_back {
-                    current.push('\\');
+                if is_escaped {
+                    // Handle common escape sequences
+                    match c {
+                        'n' => current.push('\n'),
+                        't' => current.push('\t'),
+                        'r' => current.push('\r'),
+                        '\\' => current.push('\\'),
+                        _ => {
+                            current.push('\\');
+                            current.push(c);
+                        }
+                    }
+                    is_escaped = false;
+                } else {
+                    current.push(c);
                 }
-                current.push(c);
             }
         }
     }
 
-    if in_quotes {
-        return Err("Unclosed quote in input".to_string());
+    // Check for unclosed quotes
+    match quote_state {
+        QuoteState::Double => return Err("Unclosed double quote in input".to_string()),
+        QuoteState::Single => return Err("Unclosed single quote in input".to_string()),
+        QuoteState::None => {}
     }
 
-    if !current.is_empty() {
-        args.push(current.replacen("~", &home_dir, 1));
+    // Check for trailing escape
+    if is_escaped {
+        return Err("Trailing backslash in input".to_string());
     }
-    let mut res = Vec::new();
-    for i in args {
-        for j in format(i) {
-            if j.contains("$") {
-                let word = env(j);
-                if word.is_empty() {
-                    continue;
-                } else {
-                    res.push(word);
+
+    args.push(expand_tilde(&current, &home_dir));
+
+    // Process the final result with expansions
+    let mut result = Vec::new();
+    for arg in args {
+        for expanded in format(arg) {
+            if expanded.contains('$') {
+                let expanded_var = expand_env_vars(expanded);
+                if !expanded_var.is_empty() {
+                    result.push(expanded_var);
                 }
             } else {
-                res.push(j);
+                result.push(expanded);
             }
         }
     }
-    Ok(res)
+
+    Ok(result)
 }
 
+fn expand_tilde(input: &str, home_dir: &str) -> String {
+    if input.starts_with("~/") || input == "~" {
+        input.replacen("~", home_dir, 1)
+    } else {
+        input.to_string()
+    }
+}
 pub fn format(s: String) -> Vec<String> {
     if s.contains(" ") {
         return vec![s];
@@ -201,7 +276,7 @@ fn format_input(s: String) -> Vec<String> {
     }
 }
 
-pub fn env(s: String) -> String {
+pub fn expand_env_vars(s: String) -> String {
     if s == "$" {
         return s;
     }

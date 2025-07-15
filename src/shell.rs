@@ -53,14 +53,14 @@ pub fn shell() {
                 if value[0] == "exit" {
                     break;
                 }
-                match_command(&value, home_dir.clone());
+                match_command(&value, &home_dir);
             }
             Err(e) => println!("{e}"),
         }
     }
 }
 
-pub fn match_command(commands: &[String], home_dir: String) {
+pub fn match_command(commands: &[String], home_dir: &str) {
     let comed = commands[0].clone();
     match comed.as_str() {
         "echo" => echo(&commands[1..]),
@@ -73,7 +73,7 @@ pub fn match_command(commands: &[String], home_dir: String) {
             let path = if commands.len() == 2 {
                 &commands[1]
             } else {
-                &home_dir
+                home_dir
             };
             cd(path)
         }

@@ -12,11 +12,27 @@ use crate::{
     utils::color::*,
 };
 
-pub fn print_inside(path: &Path, flag_f: bool) {
+pub fn print_one_file(path: &Path, flag_f: bool) {
+    let is_exec = is_executable(path).unwrap_or(false);
+    print!(
+        "{}{}{RESET}{}  ",
+        if is_exec {
+            GREEN.to_owned() + &BOLD.to_owned()
+        } else if is_device(&path.metadata().unwrap()) {
+            YELLOW.to_owned() + &BOLD.to_owned()
+        } else {
+            "".to_owned()
+        },
+        path.to_string_lossy().to_string(),
+        if flag_f && is_exec { "*" } else { "" }
+    )
+}
+
+pub fn print_dir_file(path: &Path, flag_f: bool) {
     if path.is_dir() {
         print!(
             "{BOLD}{BLUE}{}{RESET}{}  ",
-            path.to_string_lossy().to_string(),
+            path.file_name().unwrap().to_string_lossy().to_string(),
             if flag_f { "/" } else { "" }
         );
     } else {
@@ -30,7 +46,7 @@ pub fn print_inside(path: &Path, flag_f: bool) {
             } else {
                 "".to_owned()
             },
-            path.to_string_lossy().to_string(),
+            path.file_name().unwrap().to_string_lossy().to_string(),
             if flag_f && is_exec { "*" } else { "" }
         )
     }
