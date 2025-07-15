@@ -18,7 +18,7 @@ pub fn read_file(mut file: File) -> Result<String, Error> {
     }
 }
 
-pub fn is_dir(file: String) -> bool {
+pub fn is_dir(file: &str) -> bool {
     let file = Path::new(&file);
     file.is_dir()
 }
@@ -52,11 +52,11 @@ pub fn mk_dir(s: String) -> Result<(), Error> {
 }
 
 pub fn fix_files(file1: String, file2: String) -> Result<(String, String), String> {
-    if is_dir(file1.clone()) {
+    if is_dir(&file1) {
         return Err(format!("cp: omitting directory '{}'", file1));
     }
 
-    if is_dir(file2.clone()) {
+    if is_dir(&file2) {
         let file_name = Path::new(&file1)
             .file_name()
             .ok_or_else(|| format!("cp: invalid file path '{}'", file1))?;
@@ -70,7 +70,7 @@ pub fn fix_files(file1: String, file2: String) -> Result<(String, String), Strin
 }
 
 pub fn remove(path: String, option_r: bool) -> io::Result<()> {
-    if is_dir(path.clone()) && option_r {
+    if is_dir(&path) && option_r {
         return remove_dir_all(path);
     }
     remove_file(path)
@@ -83,7 +83,7 @@ pub fn move_file(from: &Path, to: PathBuf) -> Result<(), std::io::Error> {
 pub fn format_path(path1: &str, path2: &str) -> PathBuf {
     let file = Path::new(path1);
     let dir = Path::new(path2);
-    if is_dir(path2.to_string()) {
+    if is_dir(path2) {
         if let Some(file_name) = file.file_name() {
             dir.join(file_name)
         } else {

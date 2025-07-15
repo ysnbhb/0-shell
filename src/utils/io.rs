@@ -25,9 +25,9 @@ pub fn git_info() -> Option<String> {
     Some(shorthand)
 }
 
-pub fn print_currant_dir(home_dir: String, currnt_dir: String) {
+pub fn print_currant_dir(home_dir: &String, currnt_dir: String) {
     print!("{}{}➜  {}", BOLD, GREEN, SKY_DARKER);
-    if home_dir == currnt_dir {
+    if *home_dir == currnt_dir {
         print!("~")
     } else {
         if let Some(file_name) = Path::new(&currnt_dir).file_name() {

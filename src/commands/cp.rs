@@ -24,7 +24,7 @@ pub fn cp(args: &[String]) {
         let sourc = &args[..args.len() - 1];
 
         let to_copy = &args[args.len() - 1];
-        if !is_dir(to_copy.clone()) {
+        if !is_dir(to_copy) {
             println!("cp: target '{}' is not a directory", to_copy);
         }
         for i in sourc {

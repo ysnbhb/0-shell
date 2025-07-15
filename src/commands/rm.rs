@@ -5,7 +5,7 @@ pub fn rm(paths: &[String]) {
     let mut res: Vec<&String> = Vec::new();
     for path in paths {
         if path.starts_with("-") {
-            if handul_flag(path.clone()) {
+            if handul_flag(&path) {
                 flag_r = true;
             } else {
                 return;
@@ -14,11 +14,11 @@ pub fn rm(paths: &[String]) {
             res.push(path);
         }
     }
-    if paths.is_empty() {
+    if res.is_empty() {
         println!("rm: missing operand");
         return;
     }
-    paths.iter().for_each(|path| {
+    res.iter().for_each(|path| {
         if path.chars().filter(|c| *c != '/').all(|c| c == '.') {
             println!("rm: refusing to remove '.' or '..' directory: skipping '{path}'");
         } else if let Err(e) = remove(path.to_string(), flag_r) {
@@ -27,7 +27,7 @@ pub fn rm(paths: &[String]) {
     });
 }
 
-fn handul_flag(s: String) -> bool {
+fn handul_flag(s: &str) -> bool {
     for i in s.chars().skip(1) {
         if i != 'r' {
             println!("rm: invalid option -- '{i}'");

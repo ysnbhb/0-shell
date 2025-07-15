@@ -1,6 +1,6 @@
 use crate::utils::fs::is_exist;
 
-pub fn handle_flag(strs: &[String]) -> Result<(bool, bool, bool, Vec<String>), String> {
+pub fn handle_flag(strs: &[String]) -> Result<(bool, bool, bool, Vec<String>, bool), String> {
     let mut flage_a = false;
     let mut flage_f = false;
     let mut flage_l = false;
@@ -28,5 +28,5 @@ pub fn handle_flag(strs: &[String]) -> Result<(bool, bool, bool, Vec<String>), S
     if res.len() == 0 && !error {
         res = vec![String::from(".")]
     }
-    Ok((flage_a, flage_f, flage_l, res))
+    Ok((flage_a, flage_f, flage_l, res, error))
 }

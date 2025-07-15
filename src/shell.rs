@@ -32,7 +32,7 @@ pub fn shell() {
                 break;
             }
         };
-        print_currant_dir(home_dir.clone(), curret_dir);
+        print_currant_dir(&home_dir, curret_dir);
         let input = match read_line() {
             Some(mut text) => {
                 text.pop();
