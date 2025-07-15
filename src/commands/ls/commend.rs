@@ -3,7 +3,9 @@ use std::{fs, io, path::Path};
 use crate::{
     commands::ls::{
         handle_flag::handle_flag,
-        permission::{create_date, group_user_name, permissions, size_file_nlink},
+        permission::{
+            create_date, get_major_device_number, group_user_name, permissions, size_file_nlink,
+        },
         print_ls::print_inside,
     },
     utils::fs::is_dir,
@@ -64,6 +66,18 @@ fn print_file_info(p: &Path) -> io::Result<fs::Metadata> {
     let (user, group) = group_user_name(&metadata).unwrap_or(("".to_string(), "".to_string()));
     let (size, nlink) = size_file_nlink(&metadata);
     let creat_date = create_date(&metadata).unwrap_or("".to_string());
-    print!("{permission_file} {nlink} {group} {user} {size} {creat_date} ");
+    let device_number = get_major_device_number(p);
+    print!(
+        "{permission_file} {nlink} {group} {user}{}{size} {creat_date} ",
+        if let Ok(res) = device_number {
+            if let Some(dev_num) = res {
+                " ".to_owned() + &dev_num.to_string() + ", "
+            } else {
+                "".to_string()
+            }
+        } else {
+            "".to_string()
+        }
+    );
     Ok(metadata)
 }

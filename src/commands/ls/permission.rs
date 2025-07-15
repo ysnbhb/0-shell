@@ -129,7 +129,7 @@ pub fn group_user_name(metadata: &Metadata) -> Option<(String, String)> {
 }
 // this function return size of file and link of it
 pub fn size_file_nlink(metadata: &Metadata) -> (u64, u64) {
-    (metadata.size(), metadata.nlink())
+    (metadata.len(), metadata.nlink())
 }
 
 pub fn create_date(metadata: &Metadata) -> std::io::Result<String> {

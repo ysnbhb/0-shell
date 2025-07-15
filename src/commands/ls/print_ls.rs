@@ -6,7 +6,7 @@ pub fn print_inside(path: &Path, flag_f: bool) {
     if path.is_dir() {
         print!(
             "{BOLD}{BLUE}{}{RESET}{}  ",
-            path.file_name().unwrap().to_string_lossy().to_string(),
+            path.to_string_lossy().to_string(),
             if flag_f { "/" } else { "" }
         );
     } else {
@@ -18,7 +18,7 @@ pub fn print_inside(path: &Path, flag_f: bool) {
             } else {
                 "".to_owned()
             },
-            path.file_name().unwrap().to_string_lossy().to_string(),
+            path.to_string_lossy().to_string(),
             if flag_f && is_exec { "*" } else { "" }
         )
     }
