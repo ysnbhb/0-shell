@@ -148,20 +148,13 @@ pub fn create_date(metadata: &Metadata) -> std::io::Result<String> {
     Ok(formatted)
 }
 
-pub fn get_major_device_number(path: &Path) -> std::io::Result<Option<u32>> {
-    let metadata = fs::symlink_metadata(path)?;
-    let file_type = metadata.file_type();
-
-    // Check if it's a character device or block device
-    if file_type.is_char_device() || file_type.is_block_device() {
-        let rdev = metadata.rdev();
-        // Extract major number from rdev
-        // Major number is typically in the upper bits
-        let major = ((rdev >> 8) & 0xff) as u32;
-        Ok(Some(major))
-    } else {
-        Ok(None)
-    }
+pub fn get_major_device_number(metadata: &Metadata) -> (u32, u32) {
+    let rdev = metadata.rdev();
+    // Extract major number from rdev
+    // Major number is typically in the upper bits
+    let major = ((rdev >> 8) & 0xff) as u32;
+    let menor = ((rdev & 0xff) | ((rdev >> 12) & 0xfff00)) as u32;
+    (major, menor)
 }
 
 pub fn get_symlink_target(path: &Path) -> std::io::Result<Option<String>> {
@@ -174,3 +167,9 @@ pub fn get_symlink_target(path: &Path) -> std::io::Result<Option<String>> {
         Ok(None)
     }
 }
+
+pub fn is_device(metadata: &Metadata) -> bool {
+    metadata.file_type().is_block_device() || metadata.file_type().is_char_device()
+}
+
+
