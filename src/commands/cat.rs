@@ -1,9 +1,19 @@
-use std::path::Path;
+use std::{
+    io::{self, copy},
+    path::Path,
+};
 
 use crate::utils::fs::{open_file, read_file};
 
 pub fn cat(s: &[String]) {
+    if s.is_empty() {
+        copy_os()
+    }
     for i in s {
+        if i == "--" || i == "-" {
+            copy_os();
+            continue;
+        }
         let file = open_file(&i);
         match file {
             Ok(f) => {
@@ -19,9 +29,12 @@ pub fn cat(s: &[String]) {
                     println!("cat: {i}: Permission denied");
                 } else {
                     println!("cat: {i}: No such file or directory");
-                    break;
                 }
             }
         }
     }
+}
+
+fn copy_os() {
+    let _ = copy(&mut io::stdin(), &mut io::stdout());
 }

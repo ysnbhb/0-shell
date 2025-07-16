@@ -31,6 +31,7 @@ pub fn naive_shell_split(input: &str, home_dir: String) -> Result<Vec<String>, S
                             quote_state = QuoteState::Double;
                         }
                         QuoteState::Double => {
+                            args.push(current.clone());
                             quote_state = QuoteState::None;
                         }
                         QuoteState::Single => {
@@ -61,10 +62,9 @@ pub fn naive_shell_split(input: &str, home_dir: String) -> Result<Vec<String>, S
                 if quote_state != QuoteState::None {
                     current.push(c);
                 } else {
-                    
-                        args.push(expand_tilde(&current, &home_dir));
-                        current.clear();
-                
+                    args.push(expand_tilde(&current, &home_dir));
+                    current.clear();
+
                     // Skip multiple whitespace
                     while let Some(&next_c) = chars.peek() {
                         if next_c == ' ' || next_c == '\t' {
@@ -143,7 +143,7 @@ pub fn naive_shell_split(input: &str, home_dir: String) -> Result<Vec<String>, S
     if is_escaped {
         return Err("Trailing backslash in input".to_string());
     }
-
+    // println!("{:?}" , args);
     args.push(expand_tilde(&current, &home_dir));
 
     // Process the final result with expansions

@@ -157,19 +157,11 @@ pub fn get_major_device_number(metadata: &Metadata) -> (u32, u32) {
     (major, menor)
 }
 
-pub fn get_symlink_target(path: &Path) -> std::io::Result<Option<String>> {
-    let metadata = fs::symlink_metadata(path)?;
-
-    if metadata.file_type().is_symlink() {
-        let target = fs::read_link(path)?;
-        Ok(Some(target.to_string_lossy().to_string()))
-    } else {
-        Ok(None)
-    }
+pub fn get_symlink_target(path: &Path) -> std::io::Result<String> {
+    let target = fs::read_link(path)?;
+    Ok(target.to_string_lossy().to_string())
 }
 
 pub fn is_device(metadata: &Metadata) -> bool {
     metadata.file_type().is_block_device() || metadata.file_type().is_char_device()
 }
-
-
