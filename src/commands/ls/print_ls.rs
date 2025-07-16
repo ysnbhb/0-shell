@@ -118,5 +118,5 @@ fn print_dirive_file(per: &str, metadata: &Metadata) {
     let (_, nlink) = size_file_nlink(&metadata);
     let (major, minor) = get_major_menor_device_number(&metadata);
     let creat_date = create_date(&metadata).unwrap_or("".to_string());
-    print!("{per} {nlink} {group} {user} {major}, {minor} {creat_date} ");
+    print!("{per} {nlink} {group} {user} {major:?}, {minor:?} {creat_date} ");
 }

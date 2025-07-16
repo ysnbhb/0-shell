@@ -148,11 +148,14 @@ pub fn create_date(metadata: &Metadata) -> std::io::Result<String> {
     Ok(formatted)
 }
 
-pub fn get_major_menor_device_number(metadata: &Metadata) -> (u32, u32) {
+pub fn get_major_menor_device_number(metadata: &Metadata) -> (Option<u32>, Option<u32>) {
+    if !is_device(metadata) {
+        return (None, None);
+    }
     let rdev = metadata.rdev();
     let major = ((rdev >> 8) & 0xff) as u32;
     let menor = ((rdev & 0xff) | ((rdev >> 12) & 0xfff00)) as u32;
-    (major, menor)
+    (Some(major), Some(menor))
 }
 
 pub fn get_symlink_target(path: &Path) -> std::io::Result<String> {
