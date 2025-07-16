@@ -10,7 +10,7 @@ use crate::{
             create_date, get_major_menor_device_number, group_user_name, permissions,
             size_file_nlink,
         },
-        print_ls::{print_dir_name, print_file_info, print_file_name},
+        print_ls::{print_dir_name, print_file_info},
         r#struct::{Filee, Ls},
     },
     utils::fs::is_dir,
