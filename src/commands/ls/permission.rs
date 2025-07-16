@@ -148,10 +148,8 @@ pub fn create_date(metadata: &Metadata) -> std::io::Result<String> {
     Ok(formatted)
 }
 
-pub fn get_major_device_number(metadata: &Metadata) -> (u32, u32) {
+pub fn get_major_menor_device_number(metadata: &Metadata) -> (u32, u32) {
     let rdev = metadata.rdev();
-    // Extract major number from rdev
-    // Major number is typically in the upper bits
     let major = ((rdev >> 8) & 0xff) as u32;
     let menor = ((rdev & 0xff) | ((rdev >> 12) & 0xfff00)) as u32;
     (major, menor)

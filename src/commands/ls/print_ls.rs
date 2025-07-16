@@ -6,7 +6,7 @@ use std::{
 
 use crate::{
     commands::ls::permission::{
-        create_date, get_major_device_number, get_symlink_target, group_user_name, is_device,
+        create_date, get_major_menor_device_number, get_symlink_target, group_user_name, is_device,
         is_executable, permissions, size_file_nlink,
     },
     utils::color::*,
@@ -116,7 +116,7 @@ fn print_normal_file(per: &str, metadata: &Metadata) {
 fn print_dirive_file(per: &str, metadata: &Metadata) {
     let (user, group) = group_user_name(&metadata).unwrap_or(("".to_string(), "".to_string()));
     let (_, nlink) = size_file_nlink(&metadata);
-    let (major, minor) = get_major_device_number(&metadata);
+    let (major, minor) = get_major_menor_device_number(&metadata);
     let creat_date = create_date(&metadata).unwrap_or("".to_string());
     print!("{per} {nlink} {group} {user} {major}, {minor} {creat_date} ");
 }
