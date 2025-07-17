@@ -1,14 +1,11 @@
-use std::{
-    fs::{self},
-    path::Path,
-};
+use std::{fs, path::Path};
 
 use crate::{
     commands::ls::{
         handle_flag::handle_flag,
         permission::{
-            create_date, get_major_menor_device_number, group_user_name, permissions,
-            size_file_nlink,
+            create_date, get_major_menor_device_number, get_total_blocks, group_user_name,
+            permissions, size_file_nlink,
         },
         print_ls::{print_dir_name, print_file_info},
         r#struct::{Filee, Ls},
@@ -27,6 +24,7 @@ pub fn ls(paths: &[String]) {
             for i in all.3.clone() {
                 let mut paths = Vec::new();
                 let mut ls = Ls::new();
+                let path = Path::new(&i);
                 if !is_dir(&i) {
                     let path = Path::new(&i);
                     if all.2 {
@@ -36,7 +34,7 @@ pub fn ls(paths: &[String]) {
                     println!();
                     continue;
                 }
-                if let Ok(entries) = fs::read_dir(&i) {
+                if let Ok(entries) = path.read_dir() {
                     for entry in entries {
                         if let Ok(entry) = entry {
                             if let Some(name) = entry.file_name().to_str() {
@@ -51,6 +49,13 @@ pub fn ls(paths: &[String]) {
                             }
                         }
                     }
+                    if all.0 {
+                        let res = get_path_info(&path.join(Path::new(".")));
+                        ls.push(res);
+                        let res = get_path_info(&path.join(Path::new("..")));
+                        ls.push(res);
+                    }
+                    ls.total_bloks = get_total_blocks(path, all.0).unwrap_or(0);
                     if paths.is_empty() {
                         continue;
                     }
@@ -73,7 +78,7 @@ pub fn ls(paths: &[String]) {
 fn get_path_info(p: &Path) -> Filee {
     let metadata = fs::symlink_metadata(p).unwrap();
     let permission_file = permissions(p).unwrap_or("".to_string());
-    let (user, group) = group_user_name(&metadata).unwrap_or(("".to_string(), "".to_string()));
+    let (group, user) = group_user_name(&metadata).unwrap_or(("".to_string(), "".to_string()));
     let (size, nlink) = size_file_nlink(&metadata);
     let creat_date = create_date(&metadata).unwrap_or("".to_string());
     let (major, minor) = get_major_menor_device_number(&metadata);
