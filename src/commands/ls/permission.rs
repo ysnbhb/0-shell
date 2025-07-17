@@ -166,3 +166,13 @@ pub fn get_symlink_target(path: &Path) -> std::io::Result<String> {
 pub fn is_device(metadata: &Metadata) -> bool {
     metadata.file_type().is_block_device() || metadata.file_type().is_char_device()
 }
+
+pub fn is_broken_symlink(path: &Path) -> bool {
+    if let Ok(metadata) = fs::symlink_metadata(path) {
+        if metadata.file_type().is_symlink() {
+            // If it's a symlink, check if the target exists
+            return !path.exists();
+        }
+    }
+    false
+}

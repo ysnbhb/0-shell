@@ -1,4 +1,9 @@
-use std::fmt::Debug;
+use std::{fmt::Debug, path::Path};
+
+use crate::{
+    commands::ls::permission::is_broken_symlink,
+    utils::color::{BLUE, BOLD, RED, SKY_DARKER},
+};
 
 #[derive(Clone)]
 pub struct Ls {
@@ -49,6 +54,19 @@ impl Filee {
             user_owen,
             group,
         }
+    }
+    pub fn color(&self) -> String {
+        let path = Path::new(&self.p);
+        if path.is_dir() {
+            return BOLD.to_owned() + BLUE;
+        } else if path.is_symlink() {
+            if is_broken_symlink(path) {
+                return BOLD.to_owned() + RED;
+            } else {
+                return BOLD.to_owned() + SKY_DARKER;
+            }
+        }
+        String::new()
     }
 }
 
