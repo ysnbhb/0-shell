@@ -176,3 +176,10 @@ pub fn is_broken_symlink(path: &Path) -> bool {
     }
     false
 }
+
+
+pub fn get_final_component(path: &Path) -> Option<String> {
+    path.components()
+        .last()
+        .map(|comp| comp.as_os_str().to_string_lossy().to_string())
+}

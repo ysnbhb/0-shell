@@ -24,7 +24,7 @@ fn move_files(files: &[String], dir: &String) {
         }
         let path2 = format_path(f, dir);
         if let Err(e) = move_file(Path::new(f), path2) {
-            if is_exist(dir.clone()) {
+            if is_exist(dir) {
                 println!("mv: cannot stat '{f}' to {dir}: {}", e.kind());
             } else {
                 println!("mv: target '{dir}' is not a directory");

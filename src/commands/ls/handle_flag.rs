@@ -17,7 +17,7 @@ pub fn handle_flag(strs: &[String]) -> Result<(bool, bool, bool, Vec<String>, bo
                 }
             }
         } else {
-            if is_exist(path.clone()) {
+            if is_exist(path) {
                 res.push(path.to_string());
             } else {
                 println!("ls: cannot access '{path}': No such file or directory");

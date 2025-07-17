@@ -1,8 +1,13 @@
-use std::{fmt::Debug, path::Path};
+use std::{fmt::Display, fs, path::Path};
 
 use crate::{
-    commands::ls::permission::is_broken_symlink,
-    utils::color::{BLUE, BOLD, RED, SKY_DARKER},
+    commands::ls::permission::{
+        get_final_component, get_symlink_target, is_broken_symlink, is_device, is_executable,
+    },
+    utils::{
+        color::{BLUE, BOLD, CYAN, GREEN, RED, RESET, YELLOW},
+        fs::is_dir,
+    },
 };
 
 #[derive(Clone)]
@@ -15,10 +20,11 @@ pub struct Ls {
     pub max_len_menor: Option<usize>,
     pub max_len_mejor: Option<usize>,
     pub max_len_link: usize,
+    pub flag_f: bool,
     pub files: Vec<Filee>,
 }
 
-#[derive(Ord, PartialEq, Eq, PartialOrd, Debug, Clone)]
+#[derive(Ord, PartialEq, Eq, PartialOrd, Clone)]
 pub struct Filee {
     pub p: String,
     pub premetion: String,
@@ -55,19 +61,61 @@ impl Filee {
             group,
         }
     }
-    pub fn color(&self) -> String {
-        let path = Path::new(&self.p);
-        if path.is_dir() {
-            return BOLD.to_owned() + BLUE;
-        } else if path.is_symlink() {
+}
+
+pub fn color(path: &Path) -> String {
+    if let Ok(metadata) = fs::symlink_metadata(path) {
+        let file_type = metadata.file_type();
+
+        if file_type.is_symlink() {
             if is_broken_symlink(path) {
-                return BOLD.to_owned() + RED;
+                return format!("{}{}", BOLD, RED);
             } else {
-                return BOLD.to_owned() + SKY_DARKER;
+                return format!("{}{}", BOLD, CYAN); // or SKY_DARKER
             }
+        } else if file_type.is_dir() {
+            return format!("{}{}", BOLD, BLUE);
+        } else if is_device(&metadata) {
+            return format!("{}{}", BOLD, YELLOW);
+        } else if is_executable(path).unwrap_or(false) {
+            return format!("{}{}", BOLD, GREEN);
         }
-        String::new()
     }
+
+    String::new()
+}
+
+pub fn show_file_name(p: &str, f: &mut std::fmt::Formatter<'_>, flag_f: bool) -> std::fmt::Result {
+    let path = Path::new(p);
+    let colore = color(path);
+    let file_name = get_final_component(path).unwrap_or(path.to_string_lossy().to_string());
+    write!(f, "{colore}{file_name}{RESET}")?;
+    if path.is_symlink() {
+        write!(f, " -> ")?;
+        let linked = get_symlink_target(path).unwrap_or("".to_string());
+        let linked_path = Path::new(&linked);
+        let is_broklen = is_broken_symlink(path);
+        if is_broklen {
+            write!(f, "{colore}{linked}")?;
+        } else {
+            let colore = if linked_path.is_absolute() || linked_path.exists() {
+                color(linked_path)
+            } else {
+                let resolved_path = path.join(linked_path);
+                color(&resolved_path)
+            };
+            write!(f, "{colore}{linked}")?;
+        }
+        write!(f, "{RESET}")?;
+    }
+    if flag_f {
+        if is_dir(p) {
+            write!(f, "/")?;
+        } else if is_executable(path).unwrap_or(false) {
+            write!(f, "*")?;
+        }
+    }
+    Ok(())
 }
 
 impl Ls {
@@ -82,10 +130,22 @@ impl Ls {
             max_len_mejor: None,
             max_len_link: 0,
             files: Vec::new(),
+            flag_f: false,
         }
     }
     pub fn sort(&mut self) {
-        self.files.sort_by(|a, b| a.p.cmp(&b.p));
+        self.files.sort_by(|a: &Filee, b: &Filee| {
+            fn normalz(x: &str) -> String {
+                let p = Path::new(&x);
+                p.file_name()
+                    .unwrap_or(p.as_os_str())
+                    .to_string_lossy()
+                    .to_string()
+                    .trim_start_matches(".")
+                    .to_lowercase()
+            }
+            normalz(&a.p).cmp(&normalz(&b.p))
+        });
     }
     pub fn push(&mut self, f: Filee) {
         if self.max_len_pr < f.premetion.len() {
@@ -117,7 +177,7 @@ impl Ls {
     }
 }
 
-impl std::fmt::Display for Ls {
+impl Display for Ls {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         if let Err(e) = writeln!(f, "total {}", self.total_bloks) {
             return Err(e);
@@ -187,7 +247,8 @@ impl std::fmt::Display for Ls {
                 )?
             }
             write!(f, "{} ", i.creat_date)?;
-            writeln!(f, "{}", i.p)?;
+            show_file_name(&i.p, f, self.flag_f)?;
+            writeln!(f)?
         }
         Ok(())
     }

@@ -21,9 +21,9 @@ pub fn ls(paths: &[String]) {
             if all.3.len() == 0 {
                 return;
             }
-            for i in all.3.clone() {
+            let n = all.3.len();
+            for (index, i) in all.3.clone().iter().enumerate() {
                 let mut paths = Vec::new();
-                let mut ls = Ls::new();
                 let path = Path::new(&i);
                 if !is_dir(&i) {
                     let path = Path::new(&i);
@@ -32,6 +32,19 @@ pub fn ls(paths: &[String]) {
                     }
                     print_dir_name(path, all.1);
                     println!();
+                    if n - 1 > index {
+                        println!();
+                    }
+                    continue;
+                }
+                if n > 1 || all.4 {
+                    println!("{i}:")
+                }
+                if all.2 {
+                    prin_ls_with_flagl(&i, all.1, all.0);
+                    if n - 1 > index {
+                        println!();
+                    }
                     continue;
                 }
                 if let Ok(entries) = path.read_dir() {
@@ -41,37 +54,52 @@ pub fn ls(paths: &[String]) {
                                 if name.starts_with('.') && !all.0 {
                                     continue;
                                 }
-                                if all.2 {
-                                    let res = get_path_info(&entry.path());
-                                    ls.push(res);
-                                }
                                 paths.push(entry.path().as_os_str().to_string_lossy().to_string());
                             }
                         }
                     }
-                    if all.0 {
-                        let res = get_path_info(&path.join(Path::new(".")));
-                        ls.push(res);
-                        let res = get_path_info(&path.join(Path::new("..")));
-                        ls.push(res);
-                    }
-                    ls.total_bloks = get_total_blocks(path, all.0).unwrap_or(0);
                     if paths.is_empty() {
                         continue;
                     }
-                    paths.sort();
-                    ls.sort();
-                    // for path in ls.files.clone() {
-                    //     print_file_name(Path::new(&path.p), all.1);
-                    // }
-                    print!("{}", ls);
-                    // println!();
+                    println!();
+                    if n - 1 > index {
+                        println!();
+                    }
                 } else {
                     println!("ls: cannot open directory '{i}': Permission denied")
                 }
             }
         }
         Err(e) => println!("{e}"),
+    }
+}
+fn prin_ls_with_flagl(i: &str, flag_f: bool, flag_a: bool) {
+    let mut ls = Ls::new();
+    ls.flag_f = flag_f;
+    let path = Path::new(i);
+    if let Ok(entries) = path.read_dir() {
+        for entry in entries {
+            if let Ok(entry) = entry {
+                if let Some(name) = entry.file_name().to_str() {
+                    if name.starts_with('.') && !flag_a {
+                        continue;
+                    }
+                    let res = get_path_info(&entry.path());
+                    ls.push(res);
+                }
+            }
+        }
+        if flag_a {
+            let res = get_path_info(&path.join(Path::new(".")));
+            ls.push(res);
+            let res = get_path_info(&path.join(Path::new("..")));
+            ls.push(res);
+        }
+        ls.total_bloks = get_total_blocks(path, flag_a).unwrap_or(0);
+        ls.sort();
+        print!("{}", ls);
+    } else {
+        println!("ls: cannot open directory '{i}': Permission denied")
     }
 }
 
@@ -94,3 +122,4 @@ fn get_path_info(p: &Path) -> Filee {
         group,
     )
 }
+

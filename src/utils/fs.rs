@@ -42,7 +42,7 @@ pub fn copy_file(file1: String, file2: String) -> Result<u64, Error> {
     copy(file1, file2)
 }
 
-pub fn is_exist(file: String) -> bool {
+pub fn is_exist(file: &str) -> bool {
     let p = Path::new(&file);
     p.exists()
 }
