@@ -104,7 +104,7 @@ impl Ls {
     }
 }
 
-impl Debug for Ls {
+impl std::fmt::Display for Ls {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         if let Err(e) = writeln!(f, "total {}", self.total_bloks) {
             return Err(e);
@@ -162,6 +162,34 @@ impl Debug for Ls {
                     };
                 }
             }
+            if let Some(minor) = i.minor {
+                if let Err(e) = write!(
+                    f,
+                    "{}{} ",
+                    " ".repeat(
+                        (self.max_len_mejor.unwrap_or(0).max(self.max_len_size))
+                            - minor.to_string().len()
+                    ),
+                    minor,
+                ) {
+                    return Err(e);
+                };
+            } else {
+                if let Err(e) = write!(
+                    f,
+                    "{}{} ",
+                    " ".repeat(
+                        (self.max_len_mejor.unwrap_or(0).max(self.max_len_size))
+                            - i.size.to_string().len()
+                    ),
+                    i.size,
+                ) {
+                    return Err(e);
+                };
+            }
+            if let Err(e) = writeln!(f, "{}", i.p) {
+                return Err(e);
+            };
         }
         Ok(())
     }

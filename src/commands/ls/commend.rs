@@ -64,7 +64,7 @@ pub fn ls(paths: &[String]) {
                     // for path in ls.files.clone() {
                     //     print_file_name(Path::new(&path.p), all.1);
                     // }
-                    println!("{:?}", ls);
+                    println!("{}", ls);
                     println!();
                 } else {
                     println!("ls: cannot open directory '{i}': Permission denied")
