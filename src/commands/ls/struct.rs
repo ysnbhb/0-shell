@@ -7,7 +7,6 @@ pub struct Ls {
     pub max_len_user_owner: usize,
     pub max_len_group_owner: usize,
     pub max_len_size: usize,
-    pub max_len_date: usize,
     pub max_len_menor: Option<usize>,
     pub max_len_mejor: Option<usize>,
     pub max_len_link: usize,
@@ -61,7 +60,6 @@ impl Ls {
             max_len_user_owner: 0,
             max_len_group_owner: 0,
             max_len_size: 0,
-            max_len_date: 0,
             max_len_menor: None,
             max_len_mejor: None,
             max_len_link: 0,
@@ -74,9 +72,6 @@ impl Ls {
     pub fn push(&mut self, f: Filee) {
         if self.max_len_pr < f.premetion.len() {
             self.max_len_pr = f.premetion.len()
-        }
-        if self.max_len_date < f.creat_date.len() {
-            self.max_len_date = f.creat_date.len()
         }
         if self.max_len_group_owner < f.group.len() {
             self.max_len_group_owner = f.group.len()
@@ -110,86 +105,71 @@ impl std::fmt::Display for Ls {
             return Err(e);
         };
         for i in self.files.clone() {
-            if let Err(e) = write!(
+            write!(
                 f,
                 "{}{} ",
                 i.premetion,
                 " ".repeat(self.max_len_pr - i.premetion.len())
-            ) {
-                return Err(e);
-            };
-            if let Err(e) = write!(
+            )?;
+            write!(
                 f,
                 "{}{} ",
                 " ".repeat(self.max_len_link - i.nlink.to_string().len()),
                 i.nlink,
-            ) {
-                return Err(e);
-            };
-            if let Err(e) = write!(
+            )?;
+            write!(
                 f,
                 "{}{} ",
                 i.user_owen,
                 " ".repeat(self.max_len_user_owner - i.user_owen.len()),
-            ) {
-                return Err(e);
-            };
-            if let Err(e) = write!(
+            )?;
+            write!(
                 f,
                 "{}{} ",
                 i.group,
                 " ".repeat(self.max_len_group_owner - i.group.len()),
-            ) {
-                return Err(e);
-            };
+            )?;
+
+            // fix for major
             if let Some(major) = i.major {
-                if let Err(e) = write!(
+                write!(
                     f,
                     "{}{}, ",
                     " ".repeat(self.max_len_mejor.unwrap_or(0) - major.to_string().len()),
                     major,
-                ) {
-                    return Err(e);
-                };
+                )?
             } else {
                 if let Some(max_len_major) = self.max_len_mejor {
-                    if let Err(e) = write!(f, "{} ", " ".repeat(max_len_major)) {
-                        return Err(e);
-                    };
+                    write!(f, "{}  ", " ".repeat(max_len_major))?
                 } else {
-                    if let Err(e) = write!(f, "") {
-                        return Err(e);
-                    };
+                    write!(f, "")?
                 }
             }
+
+            // fix for menor
             if let Some(minor) = i.minor {
-                if let Err(e) = write!(
+                write!(
                     f,
                     "{}{} ",
                     " ".repeat(
-                        (self.max_len_mejor.unwrap_or(0).max(self.max_len_size))
+                        (self.max_len_menor.unwrap_or(0).max(self.max_len_size))
                             - minor.to_string().len()
                     ),
                     minor,
-                ) {
-                    return Err(e);
-                };
+                )?
             } else {
-                if let Err(e) = write!(
+                write!(
                     f,
                     "{}{} ",
                     " ".repeat(
-                        (self.max_len_mejor.unwrap_or(0).max(self.max_len_size))
+                        (self.max_len_menor.unwrap_or(0).max(self.max_len_size))
                             - i.size.to_string().len()
                     ),
                     i.size,
-                ) {
-                    return Err(e);
-                };
+                )?
             }
-            if let Err(e) = writeln!(f, "{}", i.p) {
-                return Err(e);
-            };
+            write!(f, "{} ", i.creat_date)?;
+            writeln!(f, "{}", i.p)?;
         }
         Ok(())
     }
