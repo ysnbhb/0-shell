@@ -4,69 +4,48 @@ use crate::{
     commands::ls::{
         handle_flag::handle_flag,
         permission::{
-            create_date, get_major_menor_device_number, get_total_blocks, group_user_name,
-            permissions, size_file_nlink,
+            create_date, get_final_component, get_major_menor_device_number, get_total_blocks,
+            group_user_name, is_executable, permissions, size_file_nlink,
         },
-        print_ls::{print_dir_name, print_file_info},
-        r#struct::{Filee, Ls},
+        r#struct::{Filee, Ls, color},
     },
-    utils::fs::is_dir,
+    utils::{color::RESET, fs::is_dir},
 };
 
 pub fn ls(paths: &[String]) {
     let res: Result<(bool, bool, bool, Vec<String>, bool), String> = handle_flag(paths);
 
     match res {
-        Ok(ref all) => {
-            if all.3.len() == 0 {
+        Ok((flage_a, flage_f, flage_l, paths, error)) => {
+            if paths.len() == 0 {
                 return;
             }
-            let n = all.3.len();
-            for (index, i) in all.3.clone().iter().enumerate() {
-                let mut paths = Vec::new();
+            let paths = sort_args(paths);
+            let n = paths.len();
+            for (index, i) in paths.clone().iter().enumerate() {
                 let path = Path::new(&i);
                 if !is_dir(&i) {
-                    let path = Path::new(&i);
-                    if all.2 {
-                        let _ = print_file_info(path);
+                    if flage_l {
+                        let file = get_path_info(Path::new(i));
+                        file.fmt(flage_f);
+                    } else {
+                        show_file_normal(path, flage_f)
                     }
-                    print_dir_name(path, all.1);
-                    println!();
                     if n - 1 > index {
                         println!();
                     }
                     continue;
                 }
-                if n > 1 || all.4 {
+                if n > 1 || error {
                     println!("{i}:")
                 }
-                if all.2 {
-                    prin_ls_with_flagl(&i, all.1, all.0);
-                    if n - 1 > index {
-                        println!();
-                    }
-                    continue;
-                }
-                if let Ok(entries) = path.read_dir() {
-                    for entry in entries {
-                        if let Ok(entry) = entry {
-                            if let Some(name) = entry.file_name().to_str() {
-                                if name.starts_with('.') && !all.0 {
-                                    continue;
-                                }
-                                paths.push(entry.path().as_os_str().to_string_lossy().to_string());
-                            }
-                        }
-                    }
-                    if paths.is_empty() {
-                        continue;
-                    }
-                    println!();
-                    if n - 1 > index {
-                        println!();
-                    }
+                if flage_l {
+                    prin_ls_with_flagl(&i, flage_f, flage_a);
                 } else {
-                    println!("ls: cannot open directory '{i}': Permission denied")
+                    prin_ls(&i, flage_f, flage_a)
+                }
+                if n - 1 > index {
+                    println!();
                 }
             }
         }
@@ -103,6 +82,48 @@ fn prin_ls_with_flagl(i: &str, flag_f: bool, flag_a: bool) {
     }
 }
 
+fn prin_ls(i: &str, flag_f: bool, flag_a: bool) {
+    let mut paths = Vec::new();
+    let path = Path::new(i);
+    if let Ok(entries) = path.read_dir() {
+        for entry in entries {
+            if let Ok(entry) = entry {
+                if let Some(name) = entry.file_name().to_str() {
+                    if name.starts_with('.') && !flag_a {
+                        continue;
+                    }
+                    paths.push(entry.path().as_os_str().to_string_lossy().to_string());
+                }
+            }
+        }
+        if flag_a {
+            paths.push(path.join(Path::new(".")).to_string_lossy().to_string());
+            paths.push(path.join(Path::new("..")).to_string_lossy().to_string());
+        }
+        if paths.is_empty() {
+            return;
+        }
+        paths.sort_by(|a, b| {
+            fn normalz(x: &str) -> String {
+                let p = Path::new(&x);
+                p.file_name()
+                    .unwrap_or(p.as_os_str())
+                    .to_string_lossy()
+                    .to_string()
+                    .trim_start_matches(".")
+                    .to_lowercase()
+            }
+            normalz(&a).cmp(&normalz(&b))
+        });
+        for path in paths {
+            show_file_name_normal(Path::new(&path), flag_f)
+        }
+        println!()
+    } else {
+        println!("ls: cannot open directory '{i}': Permission denied")
+    }
+}
+
 fn get_path_info(p: &Path) -> Filee {
     let metadata = fs::symlink_metadata(p).unwrap();
     let permission_file = permissions(p).unwrap_or("".to_string());
@@ -123,3 +144,60 @@ fn get_path_info(p: &Path) -> Filee {
     )
 }
 
+fn show_file_normal(path: &Path, flag_f: bool) {
+    let color = color(path);
+    let path_name = path.to_string_lossy().to_string();
+    print!("{color}{path_name}{}", RESET);
+    if flag_f {
+        if path.is_dir() {
+            print!("/")
+        } else if is_executable(path).unwrap_or(false) {
+            print!("*")
+        }
+    }
+}
+
+fn show_file_first() {
+    
+}
+
+fn show_file_name_normal(path: &Path, flag_f: bool) {
+    let color = color(path);
+    let path_name = get_final_component(path).unwrap_or(path.to_string_lossy().to_string());
+    print!("{color}{path_name}{}", RESET);
+    if flag_f {
+        if path.is_dir() {
+            print!("/")
+        } else if is_executable(path).unwrap_or(false) {
+            print!("*")
+        }
+    }
+    print!("  ")
+}
+
+fn sort_key(path: &Path) -> u8 {
+    if path.is_file() {
+        0
+    } else if path.is_dir() {
+        match fs::read_dir(path) {
+            Ok(mut entries) => {
+                if entries.next().is_none() {
+                    1
+                } else {
+                    2
+                }
+            }
+            Err(_) => 2,
+        }
+    } else {
+        3
+    }
+}
+
+pub fn sort_args(mut args: Vec<String>) -> Vec<String> {
+    args.sort_by_key(|arg| {
+        let path = Path::new(arg);
+        sort_key(path)
+    });
+    args
+}
