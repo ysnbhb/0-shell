@@ -41,5 +41,11 @@ pub fn print_currant_dir(home_dir: &String, currnt_dir: String) {
     }
     print!("{} {}$ ", RESET, YELLOW);
     print!("{}", RESET);
-    io::stdout().flush().unwrap();
+    if let Err(e) = io::stdout().flush() {
+        if e.kind() != io::ErrorKind::BrokenPipe {
+            eprintln!("Failed to flush stdout: {}", e);
+        }
+        // If it's a BrokenPipe, just exit cleanly
+        std::process::exit(0);
+    }
 }

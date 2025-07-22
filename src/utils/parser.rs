@@ -81,7 +81,34 @@ pub fn naive_shell_split(input: &str, home_dir: String) -> Result<Vec<String>, S
                     // In single quotes, backslash is literal
                     current.push('\\');
                 } else if is_escaped {
-                    current.push('\\');
+                    // We have \\, check what comes next
+                    if let Some(&next_ch) = chars.peek() {
+                        match next_ch {
+                            'n' => {
+                                chars.next(); // consume the 'n'
+                                current.push('\n');
+                            }
+                            't' => {
+                                chars.next(); // consume the 't'
+                                current.push('\t');
+                            }
+                            'r' => {
+                                chars.next(); // consume the 'r'
+                                current.push('\r');
+                            }
+                            '\\' => {
+                                chars.next(); // consume the second backslash
+                                current.push('\\');
+                            }
+                            _ => {
+                                // Unknown escape after \\, just output literal backslash and the character
+                                current.push('\\');
+                            }
+                        }
+                    } else {
+                        // \\ at end of string
+                        current.push('\\');
+                    }
                     is_escaped = false;
                 } else {
                     is_escaped = true;
@@ -113,17 +140,7 @@ pub fn naive_shell_split(input: &str, home_dir: String) -> Result<Vec<String>, S
             }
             _ => {
                 if is_escaped {
-                    // Handle common escape sequences
-                    match c {
-                        'n' => current.push('\n'),
-                        't' => current.push('\t'),
-                        'r' => current.push('\r'),
-                        '\\' => current.push('\\'),
-                        _ => {
-                            current.push('\\');
-                            current.push(c);
-                        }
-                    }
+                    current.push(c);
                     is_escaped = false;
                 } else {
                     current.push(c);
