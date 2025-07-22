@@ -31,7 +31,7 @@ pub fn naive_shell_split(input: &str, home_dir: String) -> Result<Vec<String>, S
                             quote_state = QuoteState::Double;
                         }
                         QuoteState::Double => {
-                            args.push(current.clone());
+                            // args.push(current.clone());
                             quote_state = QuoteState::None;
                         }
                         QuoteState::Single => {
@@ -160,8 +160,8 @@ pub fn naive_shell_split(input: &str, home_dir: String) -> Result<Vec<String>, S
     if is_escaped {
         return Err("Trailing backslash in input".to_string());
     }
-    // println!("{:?}" , args);
     args.push(expand_tilde(&current, &home_dir));
+    // println!("{:?}" , args);
 
     // Process the final result with expansions
     let mut result = Vec::new();
