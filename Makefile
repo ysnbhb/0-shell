@@ -1,5 +1,5 @@
 run:build
-	@./target/debug/project
+	@./target/debug/mini-shell
 build:
 	@ cargo build -q
 	
