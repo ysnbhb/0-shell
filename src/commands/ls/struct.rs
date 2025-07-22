@@ -1,11 +1,11 @@
-use std::{fs, path::Path};
+use std::{fs, os::unix::fs::FileTypeExt, path::Path};
 
 use crate::{
     commands::ls::{
         permission::{is_broken_symlink, is_device, is_executable},
         print_ls::show_file_name,
     },
-    utils::color::{BLUE, BOLD, CYAN, GREEN, RED, YELLOW},
+    utils::color::{BLUE, BOLD, CYAN, GREEN, MAGENTA, RED, YELLOW},
 };
 
 #[derive(Clone)]
@@ -65,26 +65,30 @@ impl Filee {
     }
 }
 
-pub fn color(path: &Path) -> String {
+pub fn color(path: &Path) -> (String, String) {
     if let Ok(metadata) = fs::symlink_metadata(path) {
         let file_type = metadata.file_type();
 
         if file_type.is_symlink() {
             if is_broken_symlink(path) {
-                return format!("{}{}", BOLD, RED);
+                return (format!("{}{}", BOLD, RED), String::new());
             } else {
-                return format!("{}{}", BOLD, CYAN);
+                return (format!("{}{}", BOLD, CYAN), String::new());
             }
         } else if file_type.is_dir() {
-            return format!("{}{}", BOLD, BLUE);
+            return (format!("{}{}", BOLD, BLUE), String::from("/"));
         } else if is_device(&metadata) {
-            return format!("{}{}", BOLD, YELLOW);
+            return (format!("{}{}", BOLD, YELLOW), String::new());
         } else if is_executable(path).unwrap_or(false) {
-            return format!("{}{}", BOLD, GREEN);
+            return (format!("{}{}", BOLD, GREEN), String::from("*"));
+        } else if file_type.is_socket() {
+            return (format!("{}{}", BOLD, MAGENTA), String::from("="));
+        } else if file_type.is_fifo() {
+            return (format!("{}{}", BOLD, YELLOW), String::from("|"));
         }
     }
 
-    String::new()
+    (String::new(), String::new())
 }
 
 impl Ls {

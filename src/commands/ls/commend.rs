@@ -5,7 +5,7 @@ use crate::{
         handle_flag::handle_flag,
         permission::{
             create_date, get_final_component, get_major_menor_device_number, get_total_blocks,
-            group_user_name, is_executable, permissions, size_file_nlink,
+            group_user_name, permissions, size_file_nlink,
         },
         r#struct::{Filee, Ls, color},
     },
@@ -149,15 +149,11 @@ fn get_path_info(p: &Path) -> Filee {
 }
 
 fn show_file_normal(path: &Path, flag_f: bool) {
-    let color = color(path);
+    let (color, types) = color(path);
     let path_name = path.to_string_lossy().to_string();
     print!("{color}{path_name}{}", RESET);
     if flag_f {
-        if path.is_dir() {
-            print!("/")
-        } else if is_executable(path).unwrap_or(false) {
-            print!("*")
-        }
+        print!("{types}")
     }
     print!("  ");
 }
@@ -177,15 +173,11 @@ pub fn show_file_first(args: &mut Vec<String>, flag_f: bool) {
 }
 
 fn show_file_name_normal(path: &Path, flag_f: bool) {
-    let color = color(path);
+    let (color, types) = color(path);
     let path_name = get_final_component(path).unwrap_or(path.to_string_lossy().to_string());
     print!("{color}{path_name}{}", RESET);
     if flag_f {
-        if path.is_dir() {
-            print!("/")
-        } else if is_executable(path).unwrap_or(false) {
-            print!("*")
-        }
+        print!("{types}")
     }
     print!("  ")
 }

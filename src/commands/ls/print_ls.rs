@@ -3,10 +3,10 @@ use std::{fmt::Display, path::Path};
 
 use crate::{
     commands::ls::{
-        permission::{get_final_component, get_symlink_target, is_broken_symlink, is_executable},
+        permission::{get_final_component, get_symlink_target, is_broken_symlink},
         r#struct::{Filee, Ls, color},
     },
-    utils::{color::RESET, fs::is_dir},
+    utils::color::RESET,
 };
 
 impl fmt::Display for Filee {
@@ -31,9 +31,12 @@ pub fn show_file_name_of_display(
     flag_f: bool,
 ) -> std::fmt::Result {
     let path = Path::new(p);
-    let colore = color(path);
+    let (colore, types) = color(path);
     let file_name = get_final_component(path).unwrap_or(path.to_string_lossy().to_string());
     write!(f, "{colore}{file_name}{RESET}")?;
+    if flag_f {
+        write!(f, "{}", types)?;
+    }
     if path.is_symlink() {
         write!(f, " -> ")?;
         let linked = get_symlink_target(path).unwrap_or("".to_string());
@@ -42,21 +45,17 @@ pub fn show_file_name_of_display(
         if is_broklen {
             write!(f, "{colore}{linked}")?;
         } else {
-            let colore = if linked_path.is_absolute() || linked_path.exists() {
+            let (colore, types) = if linked_path.is_absolute() || linked_path.exists() {
                 color(linked_path)
             } else {
                 let resolved_path = path.join(linked_path);
                 color(&resolved_path)
             };
             write!(f, "{colore}{linked}")?;
-        }
-        write!(f, "{RESET}")?;
-    }
-    if flag_f {
-        if is_dir(p) {
-            write!(f, "/")?;
-        } else if is_executable(path).unwrap_or(false) {
-            write!(f, "*")?;
+            if flag_f {
+                write!(f, "{RESET}")?;
+                write!(f, "{types}")?;
+            }
         }
     }
     Ok(())
@@ -64,9 +63,12 @@ pub fn show_file_name_of_display(
 
 pub fn show_file_name(p: &str, flag_f: bool) {
     let path = Path::new(p);
-    let colore = color(path);
+    let (colore, types) = color(path);
     let file_name = get_final_component(path).unwrap_or(path.to_string_lossy().to_string());
     print!("{colore}{file_name}{RESET}");
+    if flag_f {
+        print!("{types}");
+    }
     if path.is_symlink() {
         print!(" -> ");
         let linked = get_symlink_target(path).unwrap_or("".to_string());
@@ -75,23 +77,21 @@ pub fn show_file_name(p: &str, flag_f: bool) {
         if is_broklen {
             print!("{colore}{linked}");
         } else {
-            let colore = if linked_path.is_absolute() || linked_path.exists() {
+            let (colore, types) = if linked_path.is_absolute() || linked_path.exists() {
                 color(linked_path)
             } else {
                 let resolved_path = path.join(linked_path);
                 color(&resolved_path)
             };
             print!("{colore}{linked}");
+            if flag_f {
+                print!("{RESET}");
+                print!("{types}");
+            }
         }
         print!("{RESET}");
     }
-    if flag_f {
-        if is_dir(p) {
-            print!("/");
-        } else if is_executable(path).unwrap_or(false) {
-            print!("*");
-        }
-    }
+
     println!()
 }
 
@@ -166,7 +166,7 @@ impl Display for Ls {
             }
             write!(f, "{} ", i.creat_date)?;
             show_file_name_of_display(&i.p, f, self.flag_f)?;
-            writeln!(f)?
+            writeln!(f, "{}", RESET)?
         }
         Ok(())
     }
