@@ -9,16 +9,22 @@ use crate::{
         },
         r#struct::{Filee, Ls, color},
     },
-    utils::{color::RESET, fs::is_dir},
+    utils::{
+        color::RESET,
+        fs::{is_dir, is_file},
+    },
 };
 
 pub fn ls(paths: &[String]) {
     let res: Result<(bool, bool, bool, Vec<String>, bool), String> = handle_flag(paths);
 
     match res {
-        Ok((flage_a, flage_f, flage_l, paths, error)) => {
+        Ok((flage_a, flage_f, flage_l, mut paths, error)) => {
             if paths.len() == 0 {
                 return;
+            }
+            if !flage_l {
+                show_file_first(&mut paths, flage_f);
             }
             let paths = sort_args(paths);
             let n = paths.len();
@@ -26,13 +32,11 @@ pub fn ls(paths: &[String]) {
                 let path = Path::new(&i);
                 if !is_dir(&i) {
                     if flage_l {
-                        let file = get_path_info(Path::new(i));
+                        let file = get_path_info(path);
                         file.fmt(flage_f);
-                    } else {
-                        show_file_normal(path, flage_f)
-                    }
-                    if n - 1 > index {
-                        println!();
+                        if n - 1 > index {
+                            println!();
+                        }
                     }
                     continue;
                 }
@@ -155,10 +159,21 @@ fn show_file_normal(path: &Path, flag_f: bool) {
             print!("*")
         }
     }
+    print!("  ");
 }
 
-fn show_file_first() {
-    
+pub fn show_file_first(args: &mut Vec<String>, flag_f: bool) {
+    let mut ther_file = 0;
+    args.iter().for_each(|path| {
+        if is_file(&path) {
+            ther_file += 1;
+            show_file_normal(Path::new(path), flag_f);
+        }
+    });
+    println!();
+    if ther_file != args.len() && ther_file != 0 {
+        println!()
+    }
 }
 
 fn show_file_name_normal(path: &Path, flag_f: bool) {

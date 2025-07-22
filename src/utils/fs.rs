@@ -23,7 +23,7 @@ pub fn is_dir(file: &str) -> bool {
     file.is_dir()
 }
 
-pub fn is_file(file: String) -> bool {
+pub fn is_file(file: &str) -> bool {
     let file = Path::new(&file);
     file.is_file()
 }
