@@ -1,3 +1,5 @@
+use std::env;
+
 use crate::commands::cat::*;
 use crate::commands::cd::*;
 use crate::commands::clear::clear_terminal;
@@ -71,11 +73,18 @@ pub fn match_command(commands: &[String], home_dir: &str) {
                 return;
             }
             let path = if commands.len() == 2 {
-                &commands[1]
+                if commands[1] == "-" {
+                    let old_dir = env::var("OLDPWD").unwrap_or("".to_string());
+                    old_dir
+                } else if commands[1] == "--" {
+                    home_dir.to_string()
+                } else {
+                    commands[1].clone()
+                }
             } else {
-                home_dir
+                home_dir.to_string()
             };
-            cd(path)
+            cd(&path)
         }
         "pwd" => pwd(),
         "cp" => cp(&commands[1..]),

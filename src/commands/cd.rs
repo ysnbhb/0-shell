@@ -1,14 +1,15 @@
-use std::{env, path::Path};
+use std::env;
+
+use crate::utils::fs::corrent_dir;
 
 pub fn cd(s: &str) {
+    let current = corrent_dir().unwrap_or("".to_string());
     let res = env::set_current_dir(s);
-    if res.is_err() {
-        // println!("{:?}" , res.err())
-        let path = Path::new(s);
-        if path.is_file() {
-            println!("cd: not a directory: {:?}", s)
-        } else {
-            println!("no such file or directory: {:?}", s)
+    if let Err(e) = res {
+        println!("ls : {}: {:?}", e.kind(), s)
+    } else {
+        unsafe {
+            env::set_var("OLDPWD", current);
         }
     }
 }
