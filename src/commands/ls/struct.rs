@@ -1,3 +1,4 @@
+use core::fmt;
 use std::{fmt::Display, fs, path::Path};
 
 use crate::{
@@ -61,6 +62,26 @@ impl Filee {
             group,
         }
     }
+    pub fn fmt(&self, flag_f: bool) {
+        print!("{}", self);
+        show_file_name(&self.p, flag_f);
+    }
+}
+
+impl fmt::Display for Filee {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{} ", self.premetion)?;
+        write!(f, "{} ", self.user_owen)?;
+        write!(f, "{} ", self.group)?;
+        write!(f, "{} ", self.nlink)?;
+        if let Some(major) = self.major {
+            write!(f, "{}, ", major)?;
+        } else {
+            write!(f, "")?;
+        }
+        write!(f, "{} ", self.minor.unwrap_or(self.size as u32))?;
+        write!(f, "{}", self.creat_date)
+    }
 }
 
 pub fn color(path: &Path) -> String {
@@ -71,7 +92,7 @@ pub fn color(path: &Path) -> String {
             if is_broken_symlink(path) {
                 return format!("{}{}", BOLD, RED);
             } else {
-                return format!("{}{}", BOLD, CYAN); // or SKY_DARKER
+                return format!("{}{}", BOLD, CYAN);
             }
         } else if file_type.is_dir() {
             return format!("{}{}", BOLD, BLUE);
@@ -85,7 +106,11 @@ pub fn color(path: &Path) -> String {
     String::new()
 }
 
-pub fn show_file_name(p: &str, f: &mut std::fmt::Formatter<'_>, flag_f: bool) -> std::fmt::Result {
+pub fn show_file_name_of_display(
+    p: &str,
+    f: &mut std::fmt::Formatter<'_>,
+    flag_f: bool,
+) -> std::fmt::Result {
     let path = Path::new(p);
     let colore = color(path);
     let file_name = get_final_component(path).unwrap_or(path.to_string_lossy().to_string());
@@ -116,6 +141,38 @@ pub fn show_file_name(p: &str, f: &mut std::fmt::Formatter<'_>, flag_f: bool) ->
         }
     }
     Ok(())
+}
+
+pub fn show_file_name(p: &str, flag_f: bool) {
+    let path = Path::new(p);
+    let colore = color(path);
+    let file_name = get_final_component(path).unwrap_or(path.to_string_lossy().to_string());
+    print!("{colore}{file_name}{RESET}");
+    if path.is_symlink() {
+        print!(" -> ");
+        let linked = get_symlink_target(path).unwrap_or("".to_string());
+        let linked_path = Path::new(&linked);
+        let is_broklen = is_broken_symlink(path);
+        if is_broklen {
+            print!("{colore}{linked}");
+        } else {
+            let colore = if linked_path.is_absolute() || linked_path.exists() {
+                color(linked_path)
+            } else {
+                let resolved_path = path.join(linked_path);
+                color(&resolved_path)
+            };
+            print!("{colore}{linked}");
+        }
+        print!("{RESET}");
+    }
+    if flag_f {
+        if is_dir(p) {
+            print!("/");
+        } else if is_executable(path).unwrap_or(false) {
+            print!("*");
+        }
+    }
 }
 
 impl Ls {
@@ -247,7 +304,7 @@ impl Display for Ls {
                 )?
             }
             write!(f, "{} ", i.creat_date)?;
-            show_file_name(&i.p, f, self.flag_f)?;
+            show_file_name_of_display(&i.p, f, self.flag_f)?;
             writeln!(f)?
         }
         Ok(())
