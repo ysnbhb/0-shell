@@ -10,12 +10,15 @@ enum QuoteState {
     None,
     Double,
     Single,
+    Backtick,
 }
+
+use QuoteState::*;
 
 pub fn naive_shell_split(input: &str, home_dir: String) -> Result<Vec<String>, String> {
     let mut args = Vec::new();
     let mut current = String::new();
-    let mut quote_state = QuoteState::None;
+    let mut quote_state = None;
     let mut is_escaped = false;
     let mut chars = input.chars().peekable();
 
@@ -27,39 +30,39 @@ pub fn naive_shell_split(input: &str, home_dir: String) -> Result<Vec<String>, S
                     is_escaped = false;
                 } else {
                     match quote_state {
-                        QuoteState::None => {
-                            quote_state = QuoteState::Double;
+                        None => {
+                            quote_state = Double;
                         }
-                        QuoteState::Double => {
+                        Double => {
                             // args.push(current.clone());
-                            quote_state = QuoteState::None;
+                            quote_state = None;
                         }
-                        QuoteState::Single => {
+                        Single | Backtick => {
                             current.push('"');
                         }
                     }
                 }
             }
             '\'' => {
-                if is_escaped && quote_state != QuoteState::Single {
+                if is_escaped && quote_state != Single {
                     current.push('\'');
                     is_escaped = false;
                 } else {
                     match quote_state {
-                        QuoteState::None => {
-                            quote_state = QuoteState::Single;
+                        None => {
+                            quote_state = Single;
                         }
-                        QuoteState::Single => {
-                            quote_state = QuoteState::None;
+                        Single => {
+                            quote_state = None;
                         }
-                        QuoteState::Double => {
+                        Double | Backtick => {
                             current.push('\'');
                         }
                     }
                 }
             }
             ' ' | '\t' => {
-                if quote_state != QuoteState::None {
+                if quote_state != None {
                     current.push(c);
                 } else {
                     args.push(expand_tilde(&current, &home_dir));
@@ -77,7 +80,7 @@ pub fn naive_shell_split(input: &str, home_dir: String) -> Result<Vec<String>, S
                 is_escaped = false;
             }
             '\\' => {
-                if quote_state == QuoteState::Single {
+                if quote_state == Single {
                     // In single quotes, backslash is literal
                     current.push('\\');
                 } else if is_escaped {
@@ -114,8 +117,26 @@ pub fn naive_shell_split(input: &str, home_dir: String) -> Result<Vec<String>, S
                     is_escaped = true;
                 }
             }
+            '`' => {
+                if is_escaped && quote_state != Backtick {
+                    current.push('\'');
+                    is_escaped = false;
+                } else {
+                    match quote_state {
+                        None => {
+                            quote_state = Backtick;
+                        }
+                        Backtick => {
+                            quote_state = None;
+                        }
+                        Double | Single => {
+                            current.push('\'');
+                        }
+                    }
+                }
+            }
             ';' => {
-                if quote_state != QuoteState::None {
+                if quote_state != None {
                     current.push(c);
                 } else {
                     if is_escaped {
@@ -151,9 +172,10 @@ pub fn naive_shell_split(input: &str, home_dir: String) -> Result<Vec<String>, S
 
     // Check for unclosed quotes
     match quote_state {
-        QuoteState::Double => return Err("Unclosed double quote in input".to_string()),
-        QuoteState::Single => return Err("Unclosed single quote in input".to_string()),
-        QuoteState::None => {}
+        Double => return Err("Unclosed double quote in input".to_string()),
+        Single => return Err("Unclosed single quote in input".to_string()),
+        Backtick => return Err("Unclosed back tick quote in input".to_string()),
+        None => {}
     }
 
     // Check for trailing escape
