@@ -57,6 +57,7 @@ pub fn show_file_name_of_display(
                 write!(f, "{types}")?;
             }
         }
+        
     }
     Ok(())
 }
