@@ -166,7 +166,10 @@ pub fn show_file_first(args: &mut Vec<String>, flag_f: bool) {
             show_file_normal(Path::new(path), flag_f);
         }
     });
-    println!();
+    if ther_file != 0 {
+        println!();
+    }
+    // println!();
     if ther_file != args.len() && ther_file != 0 {
         println!()
     }
