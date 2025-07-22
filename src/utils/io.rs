@@ -5,7 +5,7 @@ use std::{
 
 use git2::Repository;
 
-use crate::utils::color::{BLUE, BOLD, GREEN, RED, RESET, SKY_DARKER, YELLOW};
+use crate::utils::color::{BLUE, BOLD, GREEN, MAGENTA, RED, RESET, SKY_DARKER, YELLOW};
 
 pub fn read_line() -> Option<String> {
     let mut buffer = String::new();
@@ -48,4 +48,15 @@ pub fn print_currant_dir(home_dir: &String, currnt_dir: String) {
         // If it's a BrokenPipe, just exit cleanly
         std::process::exit(0);
     }
+}
+
+pub fn print_style() {
+    let r = r#"  ___                _______. __    __   _______  __       __      
+ / _ \              /       ||  |  |  | |   ____||  |     |  |     
+| | | |  ______    |   (----`|  |__|  | |  |__   |  |     |  |     
+| | | | |______|    \   \    |   __   | |   __|  |  |     |  |     
+| |_| |         .----)   |   |  |  |  | |  |____ |  `----.|  `----.
+ \___/          |_______/    |__|  |__| |_______||_______||_______|
+                                                                   "#;
+    println!("{}{}{}", BOLD , MAGENTA , r);
 }

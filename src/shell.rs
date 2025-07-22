@@ -17,6 +17,8 @@ use crate::utils::parser::*;
 
 pub fn shell() {
     clear_terminal();
+    print_style();
+
     let home_dir_path = match home_dir() {
         Some(path) => path,
         None => {
