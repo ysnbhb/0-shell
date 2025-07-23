@@ -19,23 +19,11 @@ pub fn shell() {
     clear_terminal();
     print_style();
 
-    let home_dir_path = match home_dir() {
-        Some(path) => path,
-        None => {
-            println!("failed to get home dir");
-            return;
-        }
-    };
+    let home_dir_path = home_dir().unwrap_or("$".to_string());
 
     let home_dir = home_dir_path.to_string();
     loop {
-        let curret_dir = match corrent_dir() {
-            Some(dir) => dir,
-            None => {
-                println!("failed to get current dir");
-                break;
-            }
-        };
+        let curret_dir = corrent_dir().unwrap_or("".to_string());
         print_currant_dir(&home_dir, curret_dir);
         let input = match read_line() {
             Some(mut text) => {
@@ -88,7 +76,13 @@ pub fn match_command(commands: &[String], home_dir: &str) {
             };
             cd(&path)
         }
-        "pwd" => pwd(),
+        "pwd" => {
+            if commands.len() > 1 {
+                println!("pwd: too many arguments");
+                return;
+            }
+            pwd()
+        }
         "cp" => cp(&commands[1..]),
         "clear" => clear_terminal(),
         "mkdir" => mkdir(&commands[1..]),
