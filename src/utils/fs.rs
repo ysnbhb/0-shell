@@ -33,9 +33,10 @@ pub fn home_dir() -> Option<String> {
 }
 
 pub fn corrent_dir() -> Option<String> {
-    env::current_dir()
-        .ok()
-        .and_then(|path| path.to_str().map(|s| s.to_string()))
+    match env::current_dir() {
+        Ok(path) => path.to_str().map(|s| s.to_string()),
+        Err(_) => env::var("PWD").ok(),
+    }
 }
 
 pub fn copy_file(file1: String, file2: String) -> Result<u64, Error> {

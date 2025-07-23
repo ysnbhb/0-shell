@@ -11,5 +11,9 @@ pub fn cd(s: &str) {
         unsafe {
             env::set_var("OLDPWD", current);
         }
+        let current = corrent_dir().unwrap_or("".to_string());
+        unsafe {
+            env::set_var("PWD", current);
+        }
     }
 }
