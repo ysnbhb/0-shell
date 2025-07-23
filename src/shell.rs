@@ -19,9 +19,8 @@ pub fn shell() {
     clear_terminal();
     print_style();
 
-    let home_dir_path = home_dir().unwrap_or("$".to_string());
+    let home_dir = home_dir().unwrap_or("$".to_string());
 
-    let home_dir = home_dir_path.to_string();
     loop {
         let curret_dir = corrent_dir().unwrap_or("".to_string());
         print_currant_dir(&home_dir, curret_dir);
