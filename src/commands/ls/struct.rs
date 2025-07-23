@@ -84,7 +84,7 @@ pub fn color(path: &Path) -> (String, String) {
         } else if file_type.is_socket() {
             return (format!("{}{}", BOLD, MAGENTA), String::from("="));
         } else if file_type.is_fifo() {
-            return (format!("{}{}", BOLD, YELLOW), String::from("|"));
+            return (format!("{}", YELLOW), String::from("|"));
         }
     }
 
