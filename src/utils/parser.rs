@@ -34,7 +34,6 @@ pub fn naive_shell_split(input: &str, home_dir: String) -> Result<Vec<String>, S
                             quote_state = Double;
                         }
                         Double => {
-                            // args.push(current.clone());
                             quote_state = None;
                         }
                         Single | Backtick => {
@@ -68,7 +67,6 @@ pub fn naive_shell_split(input: &str, home_dir: String) -> Result<Vec<String>, S
                     args.push(expand_tilde(&current, &home_dir));
                     current.clear();
 
-                    // Skip multiple whitespace
                     while let Some(&next_c) = chars.peek() {
                         if next_c == ' ' || next_c == '\t' {
                             chars.next();
@@ -81,35 +79,31 @@ pub fn naive_shell_split(input: &str, home_dir: String) -> Result<Vec<String>, S
             }
             '\\' => {
                 if quote_state == Single {
-                    // In single quotes, backslash is literal
                     current.push('\\');
                 } else if is_escaped {
-                    // We have \\, check what comes next
                     if let Some(&next_ch) = chars.peek() {
                         match next_ch {
                             'n' => {
-                                chars.next(); // consume the 'n'
+                                chars.next(); 
                                 current.push('\n');
                             }
                             't' => {
-                                chars.next(); // consume the 't'
+                                chars.next();
                                 current.push('\t');
                             }
                             'r' => {
-                                chars.next(); // consume the 'r'
+                                chars.next();
                                 current.push('\r');
                             }
                             '\\' => {
-                                chars.next(); // consume the second backslash
+                                chars.next(); 
                                 current.push('\\');
                             }
                             _ => {
-                                // Unknown escape after \\, just output literal backslash and the character
                                 current.push('\\');
                             }
                         }
                     } else {
-                        // \\ at end of string
                         current.push('\\');
                     }
                     is_escaped = false;
