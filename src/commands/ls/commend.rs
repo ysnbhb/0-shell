@@ -9,10 +9,7 @@ use crate::{
         },
         r#struct::{Filee, Ls, color},
     },
-    utils::{
-        color::RESET,
-        fs::{is_dir, is_file},
-    },
+    utils::{color::RESET, fs::is_dir},
 };
 
 pub fn ls(paths: &[String]) {
@@ -161,7 +158,7 @@ fn show_file_normal(path: &Path, flag_f: bool) {
 pub fn show_file_first(args: &mut Vec<String>, flag_f: bool) {
     let mut ther_file = 0;
     args.iter().for_each(|path| {
-        if is_file(&path) {
+        if !is_dir(&path) {
             ther_file += 1;
             show_file_normal(Path::new(path), flag_f);
         }
@@ -169,7 +166,6 @@ pub fn show_file_first(args: &mut Vec<String>, flag_f: bool) {
     if ther_file != 0 {
         println!();
     }
-    // println!();
     if ther_file != args.len() && ther_file != 0 {
         println!()
     }
