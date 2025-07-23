@@ -61,10 +61,10 @@ pub fn fix_files(file1: String, file2: String) -> Result<(String, String), Strin
         let file_name = Path::new(&file1)
             .file_name()
             .ok_or_else(|| format!("cp: invalid file path '{}'", file1))?;
-        let mut dest_path = PathBuf::from(file2);
-        dest_path.push(file_name);
+        let dest_path = Path::new(&file2);
+        let res = dest_path.join(file_name);
 
-        return Ok((file1, dest_path.to_string_lossy().to_string()));
+        return Ok((file1, res.to_string_lossy().to_string()));
     }
 
     Ok((file1, file2))

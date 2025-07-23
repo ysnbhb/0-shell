@@ -12,10 +12,10 @@ pub fn cp(args: &[String]) {
     if args.len() == 2 {
         match fix_files(args[0].clone(), args[1].clone()) {
             Ok(file) => {
-                let res = copy_file(file.0, file.1);
+                let res = copy_file(file.0.clone(), file.1);
                 match res {
                     Ok(_) => return,
-                    Err(e) => println!("cp: cannot open 'todo' for reading: {}", e.kind()),
+                    Err(e) => println!("cp: cannot open '{}' for reading: {}", file.0, e.kind()),
                 }
             }
             Err(e) => println!("{e}"),
@@ -41,4 +41,3 @@ pub fn cp(args: &[String]) {
         }
     }
 }
-
