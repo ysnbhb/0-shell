@@ -58,5 +58,11 @@ pub fn print_style() {
 | |_| |         .----)   |   |  |  |  | |  |____ |  `----.|  `----.
  \___/          |_______/    |__|  |__| |_______||_______||_______|
                                                                    "#;
-    println!("{}{}{}", BOLD , MAGENTA , r);
+    let mut stdout = io::stdout();
+    if let Err(e) = writeln!(stdout,"{}{}{}", BOLD, MAGENTA, r) {
+        if e.kind() != io::ErrorKind::BrokenPipe {
+            eprintln!("Failed to flush stdout: {}", e);
+        }
+        std::process::exit(0); 
+    }
 }
