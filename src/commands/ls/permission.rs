@@ -177,8 +177,15 @@ pub fn is_broken_symlink(path: &Path) -> bool {
     false
 }
 
-
 pub fn get_final_component(path: &Path) -> Option<String> {
+    // First try the raw string approach
+    if let Some(path_str) = path.to_str() {
+        if let Some(last_part) = path_str.split('/').last() {
+            if !last_part.is_empty() {
+                return Some(last_part.to_string());
+            }
+        }
+    }
     path.components()
         .last()
         .map(|comp| comp.as_os_str().to_string_lossy().to_string())

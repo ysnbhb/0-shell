@@ -2,7 +2,7 @@ use std::{fs, os::unix::fs::FileTypeExt, path::Path};
 
 use crate::{
     commands::ls::{
-        permission::{is_broken_symlink, is_device, is_executable},
+        permission::{get_final_component, is_broken_symlink, is_device, is_executable},
         print_ls::show_file_name,
     },
     utils::color::{BLUE, BOLD, CYAN, GREEN, MAGENTA, RED, YELLOW},
@@ -109,13 +109,10 @@ impl Ls {
     pub fn sort(&mut self) {
         self.files.sort_by(|a: &Filee, b: &Filee| {
             fn normalz(x: &str) -> String {
+                // println!("x: {}", x);
                 let p = Path::new(&x);
-                p.file_name()
-                    .unwrap_or(p.as_os_str())
-                    .to_string_lossy()
-                    .to_string()
-                    .trim_start_matches(".")
-                    .to_lowercase()
+                let res = get_final_component(p).unwrap_or_else(|| p.to_string_lossy().to_string());
+                res
             }
             normalz(&a.p).cmp(&normalz(&b.p))
         });
