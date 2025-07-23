@@ -1,4 +1,3 @@
-use crate::match_command;
 use std::env::{self};
 
 pub fn parst_input(s: String, home_dir: String) -> Result<Vec<String>, String> {
@@ -84,7 +83,7 @@ pub fn naive_shell_split(input: &str, home_dir: String) -> Result<Vec<String>, S
                     if let Some(&next_ch) = chars.peek() {
                         match next_ch {
                             'n' => {
-                                chars.next(); 
+                                chars.next();
                                 current.push('\n');
                             }
                             't' => {
@@ -96,7 +95,7 @@ pub fn naive_shell_split(input: &str, home_dir: String) -> Result<Vec<String>, S
                                 current.push('\r');
                             }
                             '\\' => {
-                                chars.next(); 
+                                chars.next();
                                 current.push('\\');
                             }
                             _ => {
@@ -125,30 +124,6 @@ pub fn naive_shell_split(input: &str, home_dir: String) -> Result<Vec<String>, S
                         }
                         Double | Single => {
                             current.push('\'');
-                        }
-                    }
-                }
-            }
-            ';' => {
-                if quote_state != None {
-                    current.push(c);
-                } else {
-                    if is_escaped {
-                        current.push(';');
-                        is_escaped = false;
-                    } else {
-                        args.push(expand_tilde(&current, &home_dir));
-                        current.clear();
-
-                        if !args.is_empty() {
-                            if args[0] == "exit" {
-                                return Ok(args);
-                            }
-                            // Here you would call your match_command function
-                            // match_command(&args, home_dir.clone());
-                            match_command(&args, &home_dir);
-                        } else {
-                            return Err("syntax error near unexpected token `;'".to_string());
                         }
                     }
                 }
