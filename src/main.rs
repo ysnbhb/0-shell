@@ -1,12 +1,12 @@
 mod shell;
-mod singals;
+mod signals;
 
 pub mod commands;
 pub mod utils;
 
 use shell::*;
 
-use crate::singals::ctrl_c;
+use crate::signals::ctrl_c;
 
 fn main() {
     ctrl_c();
