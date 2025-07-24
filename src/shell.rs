@@ -1,7 +1,7 @@
 use std::env;
 
-use crate::commands::cat::*;
-use crate::commands::cd::*;
+use crate::commands::cat::cat;
+use crate::commands::cd::cd;
 use crate::commands::clear::clear_terminal;
 use crate::commands::cp::cp;
 use crate::commands::echo::*;
@@ -34,7 +34,7 @@ pub fn shell() {
                 break;
             }
         };
-        let tokens = parst_input(input, home_dir.clone());
+        let tokens = parst_input(input, &home_dir);
 
         match tokens {
             Ok(value) => {

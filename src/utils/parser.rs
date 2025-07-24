@@ -1,7 +1,24 @@
-use std::env::{self};
+use std::{
+    env::{self},
+    io::{self, Write},
+};
 
-pub fn parst_input(s: String, home_dir: String) -> Result<Vec<String>, String> {
-    naive_shell_split(&s, home_dir)
+pub fn parst_input(s: String, home_dir: &str) -> Result<Vec<String>, String> {
+    let mut input = s;
+    loop {
+        match naive_shell_split(&input, home_dir) {
+            Ok(args) => return Ok(args),
+            Err(e) => {
+                print!("> ");
+                io::stdout().flush().unwrap();
+                if let Some(line) = read_line() {
+                    input.push_str(&format!("\n{}", line.trim_end()));
+                } else {
+                    return Err(e);
+                }
+            }
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -14,7 +31,9 @@ enum QuoteState {
 
 use QuoteState::*;
 
-pub fn naive_shell_split(input: &str, home_dir: String) -> Result<Vec<String>, String> {
+use crate::utils::io::read_line;
+
+pub fn naive_shell_split(input: &str, home_dir: &str) -> Result<Vec<String>, String> {
     let mut args = Vec::new();
     let mut current = String::new();
     let mut quote_state = None;
@@ -301,10 +320,10 @@ pub fn expand_env_vars(s: String) -> String {
                 word.clear();
             }
             is_doller = !is_doller;
-        } else if i == '/' {
+        } else if !i.is_alphabetic() && !i.is_numeric() && i != '_' {
             if is_doller {
                 res.push_str(&env::var(word.clone()).unwrap_or("".to_string()));
-                res.push('/');
+                res.push(i);
                 word.clear();
                 is_doller = false;
             } else {
