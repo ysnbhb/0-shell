@@ -11,10 +11,7 @@ A simple, educational Unix-like shell written in Rust. It supports basic command
 - **Colored prompt and output** (shows current directory and Git branch)
 - **Custom shell parser:**  
   Handles quoting, escaping, tilde expansion, and environment variables
-- **Signal handling:**  
-  Graceful Ctrl+C support
 - **Basic error reporting**
-- **Brace expansion** (like `{a,b}` and `{1..5}`)
 - **Home directory expansion** (`~`)
 
 ---
