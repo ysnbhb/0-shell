@@ -286,4 +286,5 @@ hello.txt
 
 #### yassine bahbib [https://github.com/ysnbhb/]
 #### REDA ACHNIT  [https://github.com/achnitreda/]
-#### Othman Qritel  [https://github.com/QOthman]
+#### Othman Qritel  [https://github.com/QOthman/]
+#### Abdessamad Mazighi [https://github.com/amazighii/]
