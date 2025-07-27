@@ -1,7 +1,10 @@
 use std::io::{self, Write};
 
 pub fn parst_input(s: String, home_dir: &str) -> Result<Vec<String>, String> {
-    let mut input = s;
+    let mut input = s.trim().to_string();
+    if input.is_empty() {
+        return Ok(vec![])
+    }
     loop {
         match naive_shell_split(&input, home_dir) {
             Ok(args) => return Ok(args),
