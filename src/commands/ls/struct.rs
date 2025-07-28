@@ -111,7 +111,10 @@ impl Ls {
             fn normalz(x: &str) -> String {
                 // println!("x: {}", x);
                 let p = Path::new(&x);
-                let res = get_final_component(p).unwrap_or_else(|| p.to_string_lossy().to_string());
+                let res = get_final_component(p)
+                    .unwrap_or_else(|| p.to_string_lossy().to_string())
+                    .trim_start_matches(".")
+                    .to_string();
                 res
             }
             normalz(&a.p).cmp(&normalz(&b.p))
