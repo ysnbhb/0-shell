@@ -3,16 +3,31 @@ use std::io::{self, Write};
 pub fn parst_input(s: String, home_dir: &str) -> Result<Vec<String>, String> {
     let mut input = s.trim().to_string();
     if input.is_empty() {
-        return Ok(vec![])
+        return Ok(vec![]);
     }
+
     loop {
         match naive_shell_split(&input, home_dir) {
-            Ok(args) => return Ok(args),
+            Ok(mut args) => {
+                if let Some(pos) = args.iter().position(|arg| arg == "--") {
+                    args.remove(pos);
+                }
+                return Ok(args);
+            }
             Err(e) => {
                 print!("> ");
                 io::stdout().flush().unwrap();
+
                 if let Some(line) = read_line() {
-                    input.push_str(&format!("\n{}", line.trim_end()));
+                    input.push_str(&format!(
+                        "{}{}",
+                        if e == "Trailing backslash in input" {
+                            " "
+                        } else {
+                            "\n"
+                        },
+                        line.trim_end()
+                    ));
                 } else {
                     return Err(e);
                 }
@@ -82,8 +97,10 @@ pub fn naive_shell_split(input: &str, home_dir: &str) -> Result<Vec<String>, Str
                 if quote_state != None {
                     current.push(c);
                 } else {
-                    args.push(expand_tilde(&current, &home_dir));
-                    current.clear();
+                    if !current.is_empty() {
+                        args.push(expand_tilde(&current, &home_dir));
+                        current.clear();
+                    }
 
                     while let Some(&next_c) = chars.peek() {
                         if next_c == ' ' || next_c == '\t' {
@@ -170,7 +187,9 @@ pub fn naive_shell_split(input: &str, home_dir: &str) -> Result<Vec<String>, Str
     if is_escaped {
         return Err("Trailing backslash in input".to_string());
     }
-    args.push(expand_tilde(&current, &home_dir));
+    if !current.is_empty() {
+        args.push(expand_tilde(&current, &home_dir));
+    }
     // println!("{:?}" , args);
 
     // Process the final result with expansions
