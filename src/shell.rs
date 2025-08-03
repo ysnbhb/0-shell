@@ -65,8 +65,6 @@ pub fn match_command(commands: &[String], home_dir: &str) {
                 if commands[1] == "-" {
                     let old_dir = env::var("OLDPWD").unwrap_or("".to_string());
                     old_dir
-                } else if commands[1] == "--" {
-                    home_dir.to_string()
                 } else {
                     commands[1].clone()
                 }

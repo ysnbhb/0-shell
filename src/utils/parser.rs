@@ -148,7 +148,7 @@ pub fn naive_shell_split(input: &str, home_dir: &str) -> Result<Vec<String>, Str
             }
             '`' => {
                 if is_escaped && quote_state != Backtick {
-                    current.push('\'');
+                    current.push('`');
                     is_escaped = false;
                 } else {
                     match quote_state {
@@ -159,7 +159,7 @@ pub fn naive_shell_split(input: &str, home_dir: &str) -> Result<Vec<String>, Str
                             quote_state = None;
                         }
                         Double | Single => {
-                            current.push('\'');
+                            current.push('`');
                         }
                     }
                 }

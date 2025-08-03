@@ -26,6 +26,7 @@ pub fn cp(args: &[String]) {
         let to_copy = &args[args.len() - 1];
         if !is_dir(to_copy) {
             println!("cp: target '{}' is not a directory", to_copy);
+            return;
         }
         for i in sourc {
             match fix_files(i.clone(), to_copy.clone()) {

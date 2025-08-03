@@ -10,7 +10,7 @@ pub fn cat(s: &[String]) {
         copy_os()
     }
     for i in s {
-        if i == "--" || i == "-" {
+        if i == "-" {
             copy_os();
             continue;
         }
